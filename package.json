@@ -43,8 +43,8 @@
       "properties": {
         "polacode.shadow": {
           "type": "string",
-          "description": "Shadow of the snippet node. Use any value for CSS `box-shadow`",
-          "default": "rgba(0, 0, 0, 0.55) 0px 20px 68px"
+          "markdownDescription": "Shadow of the snippet node. Use any value for CSS `box-shadow`",
+          "default": "rgba(0, 0, 0, 0.55) 0px 20px 64px"
         },
         "polacode.transparentBackground": {
           "type": "boolean",
@@ -53,7 +53,7 @@
         },
         "polacode.backgroundColor": {
           "type": "string",
-          "description": "Background color of snippet container. Use any value for CSS `background-color`.",
+          "markdownDescription": "Background color of snippet container. Use any value for CSS `background-color`.",
           "format": "color-hex",
           "default": "#f2f2f2"
         },
@@ -67,28 +67,28 @@
           ],
           "enumDescriptions": [
             "Shoot with the container.",
-            "Shoot with the snippet alone. If you want transparent padding, use `container` with `\"polacode.transparentBackground\": true`."
+            "Shoot the snippet alone. If you want transparent padding, use `container` with `\"polacode.transparentBackground\": true`."
           ]
         },
         "polacode.defaultPath": {
           "type": ["string", "null"],
-          "description": "Default save location for photos.",
+          "description": "Default save location for snippets.",
           "default": null
         },
         "polacode.autoSave": {
           "type": "boolean",
-          "description": "Automatically save to disk instead of displaying save dialog.",
+          "description": "Automatically save snippet instead of displaying save dialog.",
           "default": false
         },
         "polacode.closeOnSave": {
           "type": "boolean",
-          "description": "Close panel after saving the image.",
+          "description": "Close panel after saving a snippet.",
           "default": true
         },
         "polacode.closeOnSaveDelay": {
           "type": "number",
-          "description": "Time (in miliseconds) before the Polacode window closes, if enabled",
-          "default": 1000,
+          "markdownDescription": "Time (in miliseconds) before the Polacode window closes. Only applies when `#polacode.closeOnSave#` is set to `true`.",
+          "default": 1250,
           "minimum": 250
         }
       }
