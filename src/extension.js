@@ -181,6 +181,10 @@ const activate = (context) => {
     if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor')) {
       syncSettings()
     }
+
+    if (event.affectsConfiguration('polacode.defaultPath')) {
+      lastUsedImagePath = null
+    }
   })
 }
 
