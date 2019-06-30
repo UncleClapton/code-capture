@@ -1,13 +1,13 @@
 {
-  "name": "polacode",
-  "displayName": "Polacode",
-  "description": "📸  Polaroid for your code",
-  "version": "0.3.2",
+  "name": "polacode-automated",
+  "displayName": "Polacode Automated",
+  "description": "📸  Automated polaroid for your code",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/octref/polacode.git"
+    "url": "https://github.com/UncleClapton/polacode.git"
   },
-  "publisher": "pnp",
+  "publisher": "UncleClapton",
   "keywords": [
     "polacode",
     "polaroid",
@@ -48,18 +48,18 @@
         },
         "polacode.transparentBackground": {
           "type": "boolean",
-          "description": "Transparent background for containers",
+          "description": "Transparent background for containers.",
           "default": false
         },
         "polacode.backgroundColor": {
           "type": "string",
-          "description": "Background color of snippet container. Use any value for CSS `background-color`",
+          "description": "Background color of snippet container. Use any value for CSS `background-color`.",
           "format": "color-hex",
           "default": "#f2f2f2"
         },
         "polacode.target": {
           "type": "string",
-          "description": "Shoot with or without container",
+          "description": "Shoot with or without container.",
           "default": "container",
           "enum": [
             "container",
@@ -67,14 +67,35 @@
           ],
           "enumDescriptions": [
             "Shoot with the container.",
-            "Shoot with the snippet alone. If you want transparent padding, use `container` with `\"polacode.transparentBackground\": true`"
+            "Shoot with the snippet alone. If you want transparent padding, use `container` with `\"polacode.transparentBackground\": true`."
           ]
+        },
+        "polacode.defaultPath": {
+          "type": ["string", "null"],
+          "description": "Default save location for photos.",
+          "default": null
+        },
+        "polacode.autoSave": {
+          "type": "boolean",
+          "description": "Automatically save to disk instead of displaying save dialog.",
+          "default": false
+        },
+        "polacode.closeOnSave": {
+          "type": "boolean",
+          "description": "Close panel after saving the image.",
+          "default": true
+        },
+        "polacode.closeOnSaveDelay": {
+          "type": "number",
+          "description": "Time (in miliseconds) before the Polacode window closes, if enabled",
+          "default": 1000,
+          "minimum": 250
         }
       }
     }
   },
   "devDependencies": {
-    "@types/node": "^11.12.0",
+    "@types/node": "^12.0.10",
     "@types/vscode": "^1.32.0"
   }
 }

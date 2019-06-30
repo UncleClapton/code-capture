@@ -103,6 +103,10 @@ const activate = () => {
   }
 
   const stripInitialIndent = (html, indent) => {
+    if (indent === 0) {
+      return html
+    }
+
     const doc = new DOMParser().parseFromString(html, 'text/html')
 
     const initialSpans = doc.querySelectorAll('div > div span:first-child')
@@ -117,7 +121,6 @@ const activate = () => {
 
   document.addEventListener('paste', (event) => {
     const innerHTML = event.clipboardData.getData('text/html')
-
     const code = event.clipboardData.getData('text/plain')
     const minIndent = getMinIndent(code)
 
@@ -132,12 +135,7 @@ const activate = () => {
       updateEnvironment(snippetBgColor)
     }
 
-    if (minIndent === 0) {
-      snippetNode.innerHTML = innerHTML
-    } else {
-      snippetNode.innerHTML = stripInitialIndent(innerHTML, minIndent)
-    }
-
+    snippetNode.innerHTML = stripInitialIndent(innerHTML, minIndent)
     vscode.setState({ innerHTML })
   })
 
@@ -194,68 +192,81 @@ const activate = () => {
     })
   }
 
+  let aniTimout = null
+  const buttonVivus = new Vivus('save', {
+    duration: 40,
+    onReady: () => {
+      aniTimout = setTimeout(() => {
+        obturateur.classList.remove('filling')
+      }, 700)
+    },
+  })
+
   obturateur.addEventListener('click', () => {
     if (target === 'container') {
       shootAll()
     } else {
       shootSnippet()
     }
-  })
 
-
-  const buttonVivus = new Vivus('save', { duration: 40 })
-  let isInAnimation = false
-
-  obturateur.addEventListener('mouseover', () => {
-    if (!isInAnimation) {
-      isInAnimation = true
-      obturateur.className = 'obturateur filling'
-      buttonVivus
-        .stop()
-        .reset()
-        .play(() => {
-          setTimeout(() => {
-            isInAnimation = false
-            obturateur.className = 'obturateur'
-          }, 700)
-        })
-    }
+    clearTimeout(aniTimout)
+    obturateur.classList.add('filling')
+    buttonVivus
+      .stop()
+      .reset()
+      .play(() => {
+        aniTimout = setTimeout(() => {
+          obturateur.classList.remove('filling')
+        }, 700)
+      })
   })
 
   window.addEventListener('message', (event) => {
     if (event) {
-      if (event.data.type === 'init') {
-        const { fontFamily, bgColor } = event.data
+      switch (event.data.type) {
+        case 'init':
+          if (isDark(event.data.bgColor)) {
+            snippetContainerNode.style.backgroundColor = '#f2f2f2'
+          } else {
+            snippetContainerNode.style.background = 'none'
+          }
+          break
 
-        const initialHtml = getInitialHtml(fontFamily)
-        snippetNode.innerHTML = initialHtml
-        vscode.setState({ innerHTML: initialHtml })
+        case 'setInitialHtml':
+          // eslint-disable-next-line no-case-declarations
+          const initialHtml = getInitialHtml(event.data.fontFamily)
+          snippetNode.innerHTML = initialHtml
+          vscode.setState({ innerHTML: initialHtml })
+          break
 
-        // update backdrop color, using bgColor from last pasted snippet
-        // cannot deduce from initialHtml since it's always using Nord color
-        if (isDark(bgColor)) {
-          snippetContainerNode.style.backgroundColor = '#f2f2f2'
-        } else {
-          snippetContainerNode.style.background = 'none'
-        }
-      } else if (event.data.type === 'update') {
-        document.execCommand('paste')
-      } else if (event.data.type === 'restore') {
-        snippetNode.innerHTML = event.data.innerHTML
-        updateEnvironment(event.data.bgColor)
-      } else if (event.data.type === 'restoreBgColor') {
-        updateEnvironment(event.data.bgColor)
-      } else if (event.data.type === 'updateSettings') {
-        snippetNode.style.boxShadow = event.data.shadow
-        target = event.data.target
-        transparentBackground = event.data.transparentBackground
-        snippetContainerNode.style.backgroundColor = event.data.backgroundColor
-        backgroundColor = event.data.backgroundColor
-        if (event.data.ligature) {
-          snippetNode.style.fontVariantLigatures = 'normal'
-        } else {
-          snippetNode.style.fontVariantLigatures = 'none'
-        }
+        case 'update':
+          document.execCommand('paste')
+          break
+
+        case 'restore':
+          snippetNode.innerHTML = event.data.innerHTML
+          updateEnvironment(event.data.bgColor)
+          break
+
+        case 'restoreBgColor':
+          updateEnvironment(event.data.bgColor)
+          break
+
+        case 'updateSettings':
+          snippetNode.style.boxShadow = event.data.shadow
+          target = event.data.target
+          transparentBackground = event.data.transparentBackground
+          snippetContainerNode.style.backgroundColor = event.data.backgroundColor
+          backgroundColor = event.data.backgroundColor
+          if (event.data.ligature) {
+            snippetNode.style.fontVariantLigatures = 'normal'
+          } else {
+            snippetNode.style.fontVariantLigatures = 'none'
+          }
+          break
+
+        default:
+          break
       }
     }
   })

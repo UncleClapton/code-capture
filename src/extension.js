@@ -8,7 +8,7 @@ const writeSerializedBlobToFile = (serializeBlob, fileName) => {
   fs.writeFileSync(fileName, Buffer.from(bytes))
 }
 
-const P_TITLE = 'Polacode 📸'
+const WEBVIEW_TITLE = 'Polacode'
 
 
 
@@ -20,6 +20,8 @@ const getHtmlContent = (htmlPath) => {
   })
 }
 
+const getTimestamp = () => Math.trunc((new Date()).getTime() / 1000)
+
 
 
 
@@ -28,13 +30,51 @@ const getHtmlContent = (htmlPath) => {
  * @param {vscode.ExtensionContext} context
  */
 const activate = (context) => {
-  const htmlPath = path.resolve(context.extensionPath, 'webview/index.html')
+  const htmlPath = path.resolve(context.extensionPath, 'webview', 'index.html')
 
-  let lastUsedImageUri = vscode.Uri.file(path.resolve(homedir(), 'Desktop/code.png'))
+  let lastUsedImagePath = null
   let panel = null
 
 
+  const getFileSavePath = () => {
+    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('polacode').get('defaultPath') || path.resolve(homedir(), 'Desktop')
+    return path.resolve(filePath, `polacode-${getTimestamp()}.png`)
+  }
 
+  const saveFile = async (serializedBlob) => {
+    let saveFilePath = getFileSavePath()
+
+    if (!vscode.workspace.getConfiguration('polacode').get('autoSave')) {
+      const fileURI = await vscode.window.showSaveDialog({
+        defaultUri: vscode.Uri.file(saveFilePath),
+        filters: {
+          Images: ['png'],
+        },
+      })
+
+      saveFilePath = fileURI.fsPath
+    }
+
+    if (saveFilePath) {
+      writeSerializedBlobToFile(serializedBlob, saveFilePath)
+      lastUsedImagePath = path.parse(saveFilePath).dir
+    }
+
+    if (vscode.workspace.getConfiguration('polacode').get('closeOnSave')) {
+      const timeoutTime = vscode.workspace.getConfiguration('polacode').get('closeOnSaveDelay')
+      setTimeout(() => {
+        panel.dispose()
+      // eslint-disable-next-line no-magic-numbers
+      }, timeoutTime)
+    }
+  }
+
+  const copySelection = () => {
+    vscode.commands.executeCommand('editor.action.clipboardCopyAction')
+    panel.postMessage({
+      type: 'update',
+    })
+  }
 
 
   const syncSettings = () => {
@@ -54,19 +94,7 @@ const activate = (context) => {
     panel.webview.onDidReceiveMessage(({ type, data }) => {
       switch (type) {
         case 'shoot':
-          vscode.window
-            .showSaveDialog({
-              defaultUri: lastUsedImageUri,
-              filters: {
-                Images: ['png'],
-              },
-            })
-            .then((uri) => {
-              if (uri) {
-                writeSerializedBlobToFile(data.serializedBlob, uri.fsPath)
-                lastUsedImageUri = uri
-              }
-            })
+          saveFile(data.serializedBlob)
           break
 
         case 'getAndUpdateCacheAndSettings':
@@ -82,12 +110,6 @@ const activate = (context) => {
           context.globalState.update('polacode.bgColor', data.bgColor)
           break
 
-        case 'invalidPasteContent':
-          vscode.window.showInformationMessage(
-            'Pasted content is invalid. Only copy from VS Code and check if your shortcuts for copy/paste have conflicts.'
-          )
-          break
-
         default:
           break
       }
@@ -96,10 +118,7 @@ const activate = (context) => {
 
   const setupSelectionSync = () => vscode.window.onDidChangeTextEditorSelection((event) => {
     if (event.selections[0] && !event.selections[0].isEmpty) {
-      vscode.commands.executeCommand('editor.action.clipboardCopyAction')
-      panel.postMessage({
-        type: 'update',
-      })
+      copySelection()
     }
   })
 
@@ -125,27 +144,35 @@ const activate = (context) => {
   })
 
   vscode.commands.registerCommand('polacode.activate', () => {
-    panel = vscode.window.createWebviewPanel('polacode', P_TITLE, 2, {
+    panel = vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, 2, {
       enableScripts: true,
       localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'webview'))],
     })
-
     panel.webview.html = getHtmlContent(htmlPath)
+
+    setupMessageListeners()
 
     const selectionListener = setupSelectionSync()
     panel.onDidDispose(() => {
       selectionListener.dispose()
     })
 
-    setupMessageListeners()
-
-    const { fontFamily } = vscode.workspace.getConfiguration('editor')
     const bgColor = context.globalState.get('polacode.bgColor', '#2e3440')
     panel.webview.postMessage({
       type: 'init',
-      fontFamily,
       bgColor,
     })
+
+    const { fontFamily } = vscode.workspace.getConfiguration('editor')
+    const { selection } = vscode.window.activeTextEditor
+    if (selection && !selection.isEmpty) {
+      copySelection()
+    } else {
+      panel.webview.postMessage({
+        type: 'setInitialHtml',
+        fontFamily,
+      })
+    }
 
     syncSettings()
   })
