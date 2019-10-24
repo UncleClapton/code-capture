@@ -71,7 +71,10 @@
           ]
         },
         "polacode.defaultPath": {
-          "type": ["string", "null"],
+          "type": [
+            "string",
+            "null"
+          ],
           "description": "Default save location for snippets.",
           "default": null
         },
@@ -90,6 +93,11 @@
           "markdownDescription": "Time (in miliseconds) before the Polacode window closes. Only applies when `#polacode.closeOnSave#` is set to `true`.",
           "default": 1250,
           "minimum": 250
+        },
+        "polacode.saveToClipboard": {
+          "type": "boolean",
+          "markdownDescription": "Save to clipboard if possible. You should set `polacode.autoSave` to `true` and `polacode.defautlPath` to something that is not `null`, for example \"/tmp\"",
+          "default": false
         }
       }
     }

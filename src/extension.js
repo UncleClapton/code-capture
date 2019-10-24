@@ -95,6 +95,15 @@ const activate = (context) => {
       switch (type) {
         case 'shoot':
           saveFile(data.serializedBlob)
+          if (vscode.workspace.getConfiguration('polacode').get('saveToClipboard')) {
+            const { exec } = require('child_process');
+            exec(`${path.join(__dirname, '../res/mac-to-clip')} ${getFileSavePath()}`, (err) => {
+              if (err) {
+                vscode.window.showInformationMessage('Could not copy to clipboard');
+                return;
+              }
+            });
+          }
           break
 
         case 'getAndUpdateCacheAndSettings':
