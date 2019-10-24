@@ -96,13 +96,20 @@ const activate = (context) => {
         case 'shoot':
           saveFile(data.serializedBlob)
           if (vscode.workspace.getConfiguration('polacode').get('saveToClipboard')) {
-            const { exec } = require('child_process');
-            exec(`${path.join(__dirname, '../res/mac-to-clip')} ${getFileSavePath()}`, (err) => {
-              if (err) {
-                vscode.window.showInformationMessage('Could not copy to clipboard');
-                return;
-              }
-            });
+            let filePath = getFileSavePath();
+            switch(process.platform) {
+              case 'darwin':
+                const { exec } = require('child_process');
+                exec(`${path.join(__dirname, '../res/mac-to-clip')} ${filePath}`, (err) => {
+                  if (err) {
+                    vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message);
+                    return;
+                  }
+                });
+                break;
+              default:
+                vscode.window.showErrorMessage(`Saving to clipboard not supported on this platform.${filePath? ' Image saved to ' + filePath:''}`)
+            }
           }
           break
 
