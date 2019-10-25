@@ -59,6 +59,8 @@ const activate = (context) => {
       writeSerializedBlobToFile(serializedBlob, saveFilePath)
       lastUsedImagePath = path.parse(saveFilePath).dir
     }
+    if (vscode.workspace.getConfiguration('polacode').get('saveToClipboard'))
+      copyToClipboard()
 
     if (vscode.workspace.getConfiguration('polacode').get('closeOnSave')) {
       const timeoutTime = vscode.workspace.getConfiguration('polacode').get('closeOnSaveDelay')
@@ -66,6 +68,23 @@ const activate = (context) => {
         panel.dispose()
       // eslint-disable-next-line no-magic-numbers
       }, timeoutTime)
+    }
+  }
+
+  const copyToClipboard = () => {
+    let filePath = getFileSavePath()
+    switch(process.platform) {
+      case 'darwin':
+        const { exec } = require('child_process');
+        exec(`${path.join(__dirname, '../res/mac-to-clip')} ${filePath}`, (err) => {
+          if (err) {
+            vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
+            return
+          }
+        })
+        break
+      default:
+        vscode.window.showErrorMessage(`Saving to clipboard not supported on this platform.${filePath? ' Image saved to ' + filePath:''}`)
     }
   }
 
@@ -95,22 +114,6 @@ const activate = (context) => {
       switch (type) {
         case 'shoot':
           saveFile(data.serializedBlob)
-          if (vscode.workspace.getConfiguration('polacode').get('saveToClipboard')) {
-            let filePath = getFileSavePath();
-            switch(process.platform) {
-              case 'darwin':
-                const { exec } = require('child_process');
-                exec(`${path.join(__dirname, '../res/mac-to-clip')} ${filePath}`, (err) => {
-                  if (err) {
-                    vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message);
-                    return;
-                  }
-                });
-                break;
-              default:
-                vscode.window.showErrorMessage(`Saving to clipboard not supported on this platform.${filePath? ' Image saved to ' + filePath:''}`)
-            }
-          }
           break
 
         case 'getAndUpdateCacheAndSettings':
