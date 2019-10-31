@@ -84,13 +84,13 @@ const activate = (context) => {
         })
         break
       case 'win32':
-          let ps_args = '-noprofile -noninteractive -nologo -sta -windowstyle hidden -executionpolicy unrestricted -file'
-          exec(`powershell ${ps_args} ${path.join(__dirname, '../res/win-to-clip.ps1')} -path ${filePath}`, (err) => {
-            if (err) {
-              vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
-              return
-            }
-          })
+        let ps_args = '-noprofile -noninteractive -nologo -sta -windowstyle hidden -executionpolicy unrestricted -file'
+        exec(`powershell ${ps_args} ${path.join(__dirname, '../res/win-to-clip.ps1')} -path ${filePath}`, (err) => {
+          if (err) {
+            vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
+            return
+          }
+        })
         break
       default:
         vscode.window.showErrorMessage(`Saving to clipboard not supported on this platform.${filePath? ' Image saved to ' + filePath:''}`)
