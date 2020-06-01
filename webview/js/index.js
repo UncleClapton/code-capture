@@ -5,7 +5,6 @@
   const vscode = acquireVsCodeApi()
 
   let target = 'container'
-  let windowTitle = null
 
   const snippetNode = document.getElementById('snippet')
   const snippetTitleNode = document.getElementById('snippet-title')
@@ -13,11 +12,28 @@
   const snippetContainerNode = document.getElementById('snippet-container')
 
 
+  let state = {
+    windowTitle: null,
+    innerHTML: null,
+  }
 
+  render = () => {
+    snippetTitleNode.innerHTML = state.windowTitle ? `<span>${state.windowTitle}</span>` : ''
 
+    if (state.innerHTML) {
+      snippetCodeNode.innerHTML = state.innerHTML
+    }
+  }
 
-  const updateTitle = () => {
-    snippetTitleNode.innerHTML = windowTitle ? `<span>${windowTitle}</span>` : ''
+  const setState = (partialState = {}) => {
+    state = {
+      ...state,
+      ...partialState
+    }
+
+    vscode.setState(state)
+
+    render()
   }
 
   const getMinIndent = (code) => {
@@ -59,10 +75,7 @@
     const code = event.clipboardData.getData('text/plain')
     const minIndent = getMinIndent(code)
 
-    updateTitle()
-    snippetCodeNode.innerHTML = stripInitialIndent(innerHTML, minIndent)
-
-    vscode.setState({ windowTitle, innerHTML })
+    setState({ innerHTML: stripInitialIndent(innerHTML, minIndent) })
   })
 
 
@@ -136,8 +149,7 @@
     if (event) {
       switch (event.data.type) {
         case 'updateTitleState':
-          windowTitle = event.data.windowTitle
-          vscode.setState({ windowTitle })
+          state.windowTitle = event.data.windowTitle
           break
 
         case 'update':
@@ -145,17 +157,17 @@
           break
 
         case 'restore':
-          windowTitle = event.data.windowTitle
-          updateTitle()
-          snippetCodeNode.innerHTML = event.data.innerHTML
+          setState({
+            windowTitle: event.data.windowTitle,
+            innerHTML: event.data.innerHTML,
+          })
           break
 
         case 'updateSettings':
           snippetNode.style.boxShadow = event.data.shadow
           snippetNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           target = event.data.target
-          windowTitle = event.data.windowTitle
-          vscode.setState({ windowTitle })
+          state.windowTitle = event.data.windowTitle
           break
 
         default:
@@ -172,12 +184,6 @@
 
   const oldState = vscode.getState()
   if (oldState) {
-    if (oldState.innerHTML) {
-      snippetCodeNode.innerHTML = oldState.innerHTML
-    }
-    if (oldState.windowTitle) {
-      windowTitle = oldState.windowTitle
-      updateTitle()
-    }
+    setState(oldState)
   }
 }())

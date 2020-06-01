@@ -43,7 +43,7 @@ const getTimestamp = () => Math.trunc((new Date()).getTime() / 1000)
 /**
  * @param {vscode.ExtensionContext} context
  */
-const activate = (context) => {
+exports.activate = (context) => {
   const htmlPath = path.resolve(context.extensionPath, 'webview', 'index.html')
 
   let lastUsedImagePath = null
@@ -85,10 +85,13 @@ const activate = (context) => {
   }
 
   const copySelection = () => {
-    vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
-    panel.postMessage({
-      type: 'update',
-    })
+    const editor = vscode.window.activeTextEditor
+    if (editor && editor.selection && !editor.selection.isEmpty) {
+      vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
+      panel.postMessage({
+        type: 'update',
+      })
+    }
   }
 
   const getWindowTitle = () => {
@@ -221,11 +224,6 @@ const activate = (context) => {
 
     syncSettings()
 
-    const { selection } = vscode.window.activeTextEditor
-    if (selection && !selection.isEmpty) {
-      copySelection()
-    }
+    setTimeout(copySelection, 100)
   })
 }
-
-exports.activate = activate
