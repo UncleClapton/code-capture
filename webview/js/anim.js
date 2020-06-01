@@ -1,4 +1,7 @@
-(function () {
+/* global Vivus */
+
+(function ObturateurAnimation () {
+  const ANIM_DELAY = 700
   const obturateur = document.getElementById('save')
 
   let aniTimout = null
@@ -7,7 +10,7 @@
     onReady: () => {
       aniTimout = setTimeout(() => {
         obturateur.classList.remove('filling')
-      }, 700)
+      }, ANIM_DELAY)
     },
   })
 
@@ -20,7 +23,7 @@
       .play(() => {
         aniTimout = setTimeout(() => {
           obturateur.classList.remove('filling')
-        }, 700)
+        }, ANIM_DELAY)
       })
   })
 }())

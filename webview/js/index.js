@@ -1,5 +1,4 @@
 /* global acquireVsCodeApi, domtoimage */
-/* eslint-disable no-bitwise, no-magic-numbers */
 
 (function PolacodeScript () {
   const vscode = acquireVsCodeApi()
