@@ -10,20 +10,26 @@ const writeSerializedBlobToFile = (serializeBlob, fileName) => {
 
 const WEBVIEW_TITLE = 'Polacode'
 
-
+const getNonce = () => {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let text = ''
+  for (let i = 0; i < 32; i++) {
+		text += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return text
+}
 
 const getHtmlContent = (htmlPath, panel) => {
   const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
 
+  const nonce = getNonce()
+
   return htmlContent
-  .replace(/%CSP%/gu, panel.webview.cspSource)
-  .replace(/script src="([^"]*)"/gu, (match, src) => {
-    return `script src="${
-      panel.webview.asWebviewUri(
-        vscode.Uri.file(
-          path.resolve(htmlPath, '..', src)
-        )
-      )
+  .replace(/%VSC_CSP%/gu, panel.webview.cspSource)
+  .replace(/%VSC_NONCE%/gu, nonce)
+  .replace(/src="([^"]*)"/gu, (match, src) => {
+    return `src="${
+      panel.webview.asWebviewUri(vscode.Uri.file(path.resolve(htmlPath, '..', src)))
     }"`
   })
 }
@@ -42,6 +48,7 @@ const activate = (context) => {
 
   let lastUsedImagePath = null
   let panel = null
+  let disposables = []
 
 
   const getFileSavePath = () => {
@@ -84,6 +91,42 @@ const activate = (context) => {
     })
   }
 
+  const getWindowTitle = () => {
+    const titleParts = []
+
+    const editor = vscode.window.activeTextEditor
+
+    if (editor) {
+      const filePath = editor.document.fileName.split('/')
+      let fileName = filePath.pop()
+
+      // Include parent if file is an index file.
+      if (fileName.split('.')[0].toLowerCase() === 'index') {
+        fileName = `${filePath.pop()}/${fileName}`
+      }
+
+      titleParts.push(fileName)
+    }
+
+    if (vscode.workspace.name) {
+      // Hide vscode-remote tags
+      titleParts.push(vscode.workspace.name.replace(/\s\[[^\[\]]+\]$/gu, ''))
+    }
+
+    const editorConfig = vscode.workspace.getConfiguration('window')
+    const separator = editorConfig.get('titleSeparator', " - ")
+
+    return titleParts.filter((i) => i).join(separator)
+  }
+
+  const syncWindowTitle = () => {
+    if(vscode.workspace.getConfiguration('polacode').get('windowTitle')) {
+      panel.webview.postMessage({
+        type: 'updateTitleState',
+        windowTitle: getWindowTitle(),
+      })
+    }
+  }
 
   const syncSettings = () => {
     const settings = vscode.workspace.getConfiguration('polacode')
@@ -91,14 +134,37 @@ const activate = (context) => {
     panel.webview.postMessage({
       type: 'updateSettings',
       shadow: settings.get('shadow'),
-      transparentBackground: settings.get('transparentBackground'),
-      backgroundColor: settings.get('backgroundColor'),
+      windowTitle: settings.get('windowTitle') ? getWindowTitle() : null,
       target: settings.get('target'),
       ligature: editorSettings.get('fontLigatures'),
     })
   }
 
-  const setupMessageListeners = () => {
+  const setupPanel = (_panel) => {
+
+    panel = _panel
+    panel.webview.html = getHtmlContent(htmlPath, panel)
+
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      syncWindowTitle()
+    }, null, disposables)
+
+    vscode.window.onDidChangeTextEditorSelection((event) => {
+      if (event.selections[0] && !event.selections[0].isEmpty) {
+        copySelection()
+      }
+    }, null, disposables)
+
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor') || event.affectsConfiguration('window.titleSeparator')) {
+        syncSettings()
+      }
+
+      if (event.affectsConfiguration('polacode.defaultPath')) {
+        lastUsedImagePath = null
+      }
+    }, null, disposables)
+
     panel.webview.onDidReceiveMessage(({ type, data }) => {
       switch (type) {
         case 'shoot':
@@ -106,92 +172,58 @@ const activate = (context) => {
           break
 
         case 'getAndUpdateCacheAndSettings':
-          panel.webview.postMessage({
-            type: 'restoreBgColor',
-            bgColor: context.globalState.get('polacode.bgColor', '#2e3440'),
-          })
-
           syncSettings()
-          break
-
-        case 'updateBgColor':
-          context.globalState.update('polacode.bgColor', data.bgColor)
           break
 
         default:
           break
       }
-    })
+    }, null, disposables)
+
+    panel.onDidDispose(() => {
+      panel.dispose()
+
+      while (disposables.length) {
+        const listener = disposables.pop()
+        if (listener) {
+          listener.dispose()
+        }
+      }
+
+      panel = null
+    }, null, disposables)
   }
-
-  const setupSelectionSync = () => vscode.window.onDidChangeTextEditorSelection((event) => {
-    if (event.selections[0] && !event.selections[0].isEmpty) {
-      copySelection()
-    }
-  })
-
-
-
-
 
   vscode.window.registerWebviewPanelSerializer('polacode', {
     deserializeWebviewPanel: (_panel, state) => {
-      panel = _panel
-      panel.webview.html = getHtmlContent(htmlPath, panel)
+      setupPanel(_panel)
+
       panel.webview.postMessage({
         type: 'restore',
+        windowTitle: state.windowTitle,
         innerHTML: state.innerHTML,
-        bgColor: context.globalState.get('polacode.bgColor', '#2e3440'),
       })
-      const selectionListener = setupSelectionSync()
-      panel.onDidDispose(() => {
-        selectionListener.dispose()
-      })
-      setupMessageListeners()
     },
   })
 
   vscode.commands.registerCommand('polacode.activate', () => {
-    panel = vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, vscode.ViewColumn.Two, {
-      enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath))],
-    })
-    panel.webview.html = getHtmlContent(htmlPath, panel)
+    if (panel) {
+      panel.reveal(vscode.ViewColumn.Two)
+      return
+    }
 
-    setupMessageListeners()
+    setupPanel(
+      vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, vscode.ViewColumn.Two, {
+        enableScripts: true,
+        localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+      })
+    )
 
-    const selectionListener = setupSelectionSync()
-    panel.onDidDispose(() => {
-      selectionListener.dispose()
-    })
+    syncSettings()
 
-    const bgColor = context.globalState.get('polacode.bgColor', '#2e3440')
-    panel.webview.postMessage({
-      type: 'init',
-      bgColor,
-    })
-
-    const { fontFamily } = vscode.workspace.getConfiguration('editor')
     const { selection } = vscode.window.activeTextEditor
     if (selection && !selection.isEmpty) {
       copySelection()
-    } else {
-      panel.webview.postMessage({
-        type: 'setInitialHtml',
-        fontFamily,
-      })
-    }
-
-    syncSettings()
-  })
-
-  vscode.workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor')) {
-      syncSettings()
-    }
-
-    if (event.affectsConfiguration('polacode.defaultPath')) {
-      lastUsedImagePath = null
     }
   })
 }
