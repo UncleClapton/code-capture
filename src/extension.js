@@ -12,11 +12,19 @@ const WEBVIEW_TITLE = 'Polacode'
 
 
 
-const getHtmlContent = (htmlPath) => {
+const getHtmlContent = (htmlPath, panel) => {
   const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
-  return htmlContent.replace(/script src="([^"]*)"/gu, (match, src) => {
-    const realSource = `vscode-resource:${path.resolve(htmlPath, '..', src)}`
-    return `script src="${realSource}"`
+
+  return htmlContent
+  .replace(/%CSP%/gu, panel.webview.cspSource)
+  .replace(/script src="([^"]*)"/gu, (match, src) => {
+    return `script src="${
+      panel.webview.asWebviewUri(
+        vscode.Uri.file(
+          path.resolve(htmlPath, '..', src)
+        )
+      )
+    }"`
   })
 }
 
@@ -129,7 +137,7 @@ const activate = (context) => {
   vscode.window.registerWebviewPanelSerializer('polacode', {
     deserializeWebviewPanel: (_panel, state) => {
       panel = _panel
-      panel.webview.html = getHtmlContent(htmlPath)
+      panel.webview.html = getHtmlContent(htmlPath, panel)
       panel.webview.postMessage({
         type: 'restore',
         innerHTML: state.innerHTML,
@@ -144,11 +152,11 @@ const activate = (context) => {
   })
 
   vscode.commands.registerCommand('polacode.activate', () => {
-    panel = vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, 2, {
+    panel = vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, vscode.ViewColumn.Two, {
       enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'webview'))],
+      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath))],
     })
-    panel.webview.html = getHtmlContent(htmlPath)
+    panel.webview.html = getHtmlContent(htmlPath, panel)
 
     setupMessageListeners()
 
