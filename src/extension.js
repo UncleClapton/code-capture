@@ -70,7 +70,7 @@ const activate = (context) => {
   }
 
   const copySelection = () => {
-    vscode.commands.executeCommand('editor.action.clipboardCopyAction')
+    vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
     panel.postMessage({
       type: 'update',
     })
