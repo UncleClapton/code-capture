@@ -2,7 +2,7 @@
 <head>
   <meta
     http-equiv="Content-Security-Policy"
-    content="default-src 'none'; img-src %CSP% data: https:; script-src %CSP%; style-src 'unsafe-inline' %CSP%;"
+    content="default-src 'none'; img-src %VSC_CSP% data: https:; script-src 'nonce-%VSC_NONCE%'; style-src 'unsafe-inline' %VSC_CSP%;"
   />
   <style>
     html {
@@ -171,10 +171,10 @@
     </svg>
   </div>
 
-  <script src="./lib/vivus.js"></script>
-  <script src="../node_modules/dom-to-image-even-more/dist/dom-to-image-more.min.js" async></script>
-  <script src="./js/index.js"></script>
-  <script src="./js/obturateur.js" async></script>
+  <script nonce="%VSC_NONCE%" src="./lib/vivus.js"></script>
+  <script nonce="%VSC_NONCE%" src="../node_modules/dom-to-image-even-more/dist/dom-to-image-more.min.js" async></script>
+  <script nonce="%VSC_NONCE%" src="./js/index.js"></script>
+  <script nonce="%VSC_NONCE%" src="./js/obturateur.js" async></script>
 
 
 
