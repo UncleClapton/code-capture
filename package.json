@@ -100,6 +100,7 @@
     "eslint-plugin-jsdoc": "^26.0.1"
   },
   "dependencies": {
-    "dom-to-image-even-more": "^1.0.4"
+    "dom-to-image-even-more": "^1.0.4",
+    "vivus": "^0.4.5"
   }
 }
