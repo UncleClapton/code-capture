@@ -150,11 +150,8 @@
   window.addEventListener('message', (event) => {
     if (event) {
       switch (event.data.type) {
-        case 'updateTitleState':
-          state.windowTitle = event.data.windowTitle
-          break
-
         case 'update':
+          state.windowTitle = event.data.windowTitle
           document.execCommand('paste')
           break
 
@@ -162,7 +159,6 @@
           snippetNode.style.boxShadow = event.data.shadow
           snippetNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           target = event.data.target
-          state.windowTitle = event.data.windowTitle
           break
 
         default:
@@ -171,9 +167,7 @@
     }
   })
 
-  vscode.postMessage({
-    type: 'getAndUpdateCacheAndSettings',
-  })
+  vscode.postMessage({ type: 'getAndUpdateCacheAndSettings' })
 
   snippetContainerNode.style.opacity = '1'
 

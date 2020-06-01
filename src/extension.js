@@ -96,16 +96,6 @@ exports.activate = (context) => {
     }
   }
 
-  const copySelection = () => {
-    const editor = vscode.window.activeTextEditor
-    if (editor && editor.selection && !editor.selection.isEmpty) {
-      vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
-      panel.postMessage({
-        type: 'update',
-      })
-    }
-  }
-
   const getWindowTitle = () => {
     const titleParts = []
 
@@ -135,11 +125,17 @@ exports.activate = (context) => {
     return titleParts.filter((part) => part).join(separator)
   }
 
-  const syncWindowTitle = () => {
-    if (vscode.workspace.getConfiguration('polacode').get('windowTitle')) {
-      panel.webview.postMessage({
-        type: 'updateTitleState',
-        windowTitle: getWindowTitle(),
+  const copySelection = () => {
+    const editor = vscode.window.activeTextEditor
+
+    if (editor && editor.selection && !editor.selection.isEmpty) {
+      const settings = vscode.workspace.getConfiguration('polacode')
+
+      vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
+
+      panel.postMessage({
+        type: 'update',
+        windowTitle: settings.get('windowTitle') ? getWindowTitle() : null,
       })
     }
   }
@@ -150,7 +146,6 @@ exports.activate = (context) => {
     panel.webview.postMessage({
       type: 'updateSettings',
       shadow: settings.get('shadow'),
-      windowTitle: settings.get('windowTitle') ? getWindowTitle() : null,
       target: settings.get('target'),
       ligature: editorSettings.get('fontLigatures'),
     })
@@ -164,16 +159,12 @@ exports.activate = (context) => {
       copySelection()
     }, null, disposables)
 
-    vscode.window.onDidChangeActiveTextEditor(() => {
-      syncWindowTitle()
-    }, null, disposables)
-
     vscode.window.onDidChangeTextEditorSelection(() => {
       copySelection()
     }, null, disposables)
 
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor') || event.affectsConfiguration('window.titleSeparator')) {
+      if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor')) {
         syncSettings()
       }
 
