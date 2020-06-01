@@ -1,3 +1,5 @@
 .vscode
 demo
 *.vsix
+node_modules
+!node_modules/dom-to-image-even-more/dist/dom-to-image-more.min.js

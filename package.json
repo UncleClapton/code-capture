@@ -24,7 +24,7 @@
     "Other"
   ],
   "engines": {
-    "vscode": "^1.32.0"
+    "vscode": "^1.45.1"
   },
   "activationEvents": [
     "onCommand:polacode.activate",
@@ -39,7 +39,7 @@
       }
     ],
     "configuration": {
-      "title": "Polacode",
+      "title": "Polacode Automated",
       "properties": {
         "polacode.shadow": {
           "type": "string",
@@ -56,6 +56,11 @@
           "markdownDescription": "Background color of snippet container. Use any value for CSS `background-color`.",
           "format": "color-hex",
           "default": "#f2f2f2"
+        },
+        "polacode.windowTitle": {
+          "type": "boolean",
+          "description": "Display a window title at the top of the snippet",
+          "default": false
         },
         "polacode.target": {
           "type": "string",
@@ -100,5 +105,8 @@
   "devDependencies": {
     "@types/node": "^14.0.6",
     "@types/vscode": "^1.45.1"
+  },
+  "dependencies": {
+    "dom-to-image-even-more": "^1.0.4"
   }
 }
