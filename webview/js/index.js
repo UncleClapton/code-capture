@@ -1,7 +1,7 @@
-/* global acquireVsCodeApi, domtoimage, Vivus */
+/* global acquireVsCodeApi, domtoimage */
 /* eslint-disable no-bitwise, no-magic-numbers */
 
-(function () {
+(function PolacodeScript () {
   const vscode = acquireVsCodeApi()
 
   let target = 'container'
@@ -13,12 +13,13 @@
 
 
   let state = {
+    renderTitle: true,
     windowTitle: null,
     innerHTML: null,
   }
 
-  render = () => {
-    snippetTitleNode.innerHTML = state.windowTitle ? `<span>${state.windowTitle}</span>` : ''
+  const render = () => {
+    snippetTitleNode.innerHTML = state.windowTitle && state.renderTitle ? `<span>${state.windowTitle}</span>` : ''
 
     if (state.innerHTML) {
       snippetCodeNode.innerHTML = state.innerHTML
@@ -28,7 +29,7 @@
   const setState = (partialState = {}) => {
     state = {
       ...state,
-      ...partialState
+      ...partialState,
     }
 
     vscode.setState(state)
@@ -60,12 +61,10 @@
 
     const doc = new DOMParser().parseFromString(html, 'text/html')
 
-    const initialSpans = doc.querySelectorAll('div > div span:first-child')
-
-
-    for (let index = 0; index < initialSpans.length; index += 1) {
-      initialSpans[index].textContent = initialSpans[index].textContent.slice(indent)
-    }
+    doc.querySelectorAll('div > div span:first-child').forEach((node) => {
+      // eslint-disable-next-line no-param-reassign
+      node.textContent = node.textContent.slice(indent)
+    })
 
     return doc.body.innerHTML
   }
@@ -137,6 +136,10 @@
     })
   }
 
+  snippetTitleNode.addEventListener('click', () => {
+    setState({ renderTitle: !state.renderTitle })
+  })
+
   document.getElementById('save').addEventListener('click', () => {
     if (target === 'container') {
       shootAll()
@@ -154,13 +157,6 @@
 
         case 'update':
           document.execCommand('paste')
-          break
-
-        case 'restore':
-          setState({
-            windowTitle: event.data.windowTitle,
-            innerHTML: event.data.innerHTML,
-          })
           break
 
         case 'updateSettings':
