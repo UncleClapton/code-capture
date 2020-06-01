@@ -44,18 +44,7 @@
         "polacode.shadow": {
           "type": "string",
           "markdownDescription": "Shadow of the snippet node. Use any value for CSS `box-shadow`",
-          "default": "rgba(0, 0, 0, 0.55) 0px 20px 64px"
-        },
-        "polacode.transparentBackground": {
-          "type": "boolean",
-          "description": "Transparent background for containers.",
-          "default": false
-        },
-        "polacode.backgroundColor": {
-          "type": "string",
-          "markdownDescription": "Background color of snippet container. Use any value for CSS `background-color`.",
-          "format": "color-hex",
-          "default": "#f2f2f2"
+          "default": "0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36)"
         },
         "polacode.windowTitle": {
           "type": "boolean",
