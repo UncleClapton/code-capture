@@ -3,14 +3,22 @@ const { homedir } = require('os')
 const path = require('path')
 const vscode = require('vscode') /* eslint-disable-line import/no-unresolved */// this is fine
 
+
+
+
+
+const LOAD_DELAY = 200
+const NONCE_LENGTH = 32
+const WEBVIEW_TITLE = 'Polacode'
+
+
+
+
+
 const writeSerializedBlobToFile = (serializeBlob, fileName) => {
   const bytes = new Uint8Array(serializeBlob.split(','))
   fs.writeFileSync(fileName, Buffer.from(bytes))
 }
-
-const WEBVIEW_TITLE = 'Polacode'
-
-const NONCE_LENGTH = 32
 
 const getNonce = () => {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -224,6 +232,6 @@ exports.activate = (context) => {
 
     syncSettings()
 
-    setTimeout(copySelection, 100)
+    setTimeout(copySelection, LOAD_DELAY)
   })
 }
