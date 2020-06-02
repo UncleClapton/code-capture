@@ -1,4 +1,3 @@
-const fs = require('fs')
 const { homedir } = require('os')
 const path = require('path')
 const vscode = require('vscode') /* eslint-disable-line import/no-unresolved */// this is fine
@@ -7,47 +6,18 @@ const vscode = require('vscode') /* eslint-disable-line import/no-unresolved *//
 
 
 
-const LOAD_DELAY = 200
-const NONCE_LENGTH = 32
+const {
+  getTimestamp,
+  getWebviewContent,
+  getWindowTitle,
+  writeSerializedBlobToFile,
+} = require('./util')
+
+
+
+
+
 const WEBVIEW_TITLE = 'Polacode'
-
-
-
-
-
-const writeSerializedBlobToFile = (serializeBlob, fileName) => {
-  const bytes = new Uint8Array(serializeBlob.split(','))
-  fs.writeFileSync(fileName, Buffer.from(bytes))
-}
-
-const getNonce = () => {
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-  let text = ''
-  // eslint-disable-next-line no-restricted-syntax
-  for (let char = 0; char < NONCE_LENGTH; char += 1) {
-    text += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-  return text
-}
-
-const getHtmlContent = (htmlPath, panel) => {
-  const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
-
-  const nonce = getNonce()
-
-  return htmlContent
-    .replace(/%VSC_CSP%/gu, panel.webview.cspSource)
-    .replace(/%VSC_NONCE%/gu, nonce)
-    .replace(/src="([^"]*)"/gu, (match, src) => {
-      return `src="${
-        panel.webview.asWebviewUri(vscode.Uri.file(path.resolve(htmlPath, '..', src)))
-      }"`
-    })
-}
-
-const getTimestamp = () => {
-  return Math.trunc((new Date()).getTime() / 1000)
-}
 
 
 
@@ -96,34 +66,7 @@ exports.activate = (context) => {
     }
   }
 
-  const getWindowTitle = () => {
-    const titleParts = []
 
-    const editor = vscode.window.activeTextEditor
-
-    if (editor) {
-      const filePath = editor.document.fileName.split('/')
-      let fileName = filePath.pop()
-
-      // Include parent if file is an index file.
-      if (fileName.split('.')[0].toLowerCase() === 'index') {
-        fileName = `${filePath.pop()}/${fileName}`
-      }
-
-      titleParts.push(fileName)
-    }
-
-    if (vscode.workspace.name) {
-      // Hide vscode-remote tags
-      titleParts.push(vscode.workspace.name.replace(/\s\[[^\[\]]+\]$/gu, ''))
-    }
-
-    const editorConfig = vscode.workspace.getConfiguration('window')
-    const separator = editorConfig.get('titleSeparator', ' - ')
-
-    // eslint-disable-next-line arrow-body-style
-    return titleParts.filter((part) => part).join(separator)
-  }
 
   const copySelection = () => {
     const editor = vscode.window.activeTextEditor
@@ -153,7 +96,7 @@ exports.activate = (context) => {
 
   const setupPanel = (_panel) => {
     panel = _panel
-    panel.webview.html = getHtmlContent(htmlPath, panel)
+    panel.webview.html = getWebviewContent(htmlPath, panel)
 
     vscode.window.onDidChangeActiveColorTheme(() => {
       copySelection()
@@ -210,19 +153,20 @@ exports.activate = (context) => {
 
   vscode.commands.registerCommand('polacode.activate', () => {
     if (panel) {
-      panel.reveal(vscode.ViewColumn.Two)
-      return
+      panel.reveal(vscode.ViewColumn.Two, true)
+    } else {
+      setupPanel(
+        vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, {
+          preserveFocus: true,
+          viewColumn: vscode.ViewColumn.Two,
+        }, {
+          enableScripts: true,
+          localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+        }),
+      )
     }
 
-    setupPanel(
-      vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, vscode.ViewColumn.Two, {
-        enableScripts: true,
-        localResourceRoots: [vscode.Uri.file(context.extensionPath)],
-      }),
-    )
-
     syncSettings()
-
-    setTimeout(copySelection, LOAD_DELAY)
+    copySelection()
   })
 }
