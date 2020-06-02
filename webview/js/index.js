@@ -117,7 +117,6 @@
       style: {
         transform: 'scale(2)',
         'transform-origin': 'center',
-        background: 'none',
       },
     })
   }
