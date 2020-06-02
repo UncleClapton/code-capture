@@ -72,13 +72,11 @@ exports.activate = (context) => {
     const editor = vscode.window.activeTextEditor
 
     if (editor && editor.selection && !editor.selection.isEmpty) {
-      const settings = vscode.workspace.getConfiguration('polacode')
-
       vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
 
       panel.postMessage({
         type: 'update',
-        windowTitle: settings.get('windowTitle') ? getWindowTitle() : null,
+        windowTitle: getWindowTitle(),
       })
     }
   }
@@ -88,6 +86,8 @@ exports.activate = (context) => {
     const editorSettings = vscode.workspace.getConfiguration('editor', null)
     panel.webview.postMessage({
       type: 'updateSettings',
+      background: settings.get('background'),
+      renderTitle: settings.get('windowTitle'),
       shadow: settings.get('shadow'),
       target: settings.get('target'),
       ligature: editorSettings.get('fontLigatures'),

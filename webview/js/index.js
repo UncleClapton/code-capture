@@ -12,13 +12,13 @@
 
 
   let state = {
-    renderTitle: true,
+    renderTitle: false,
     windowTitle: null,
     innerHTML: null,
   }
 
   const render = () => {
-    snippetTitleNode.innerHTML = state.windowTitle && state.renderTitle ? `<span>${state.windowTitle}</span>` : ''
+    snippetTitleNode.innerHTML = state.renderTitle && state.windowTitle ? `<span>${state.windowTitle}</span>` : ''
 
     if (state.innerHTML) {
       snippetCodeNode.innerHTML = state.innerHTML
@@ -156,9 +156,11 @@
           break
 
         case 'updateSettings':
+          snippetContainerNode.style.background = event.data.background ?? 'transparent'
           snippetNode.style.boxShadow = event.data.shadow
-          snippetNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
+          snippetCodeNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           target = event.data.target
+          setState({ renderTitle: event.data.renderTitle })
           break
 
         default:
@@ -166,8 +168,6 @@
       }
     }
   })
-
-  vscode.postMessage({ type: 'getAndUpdateCacheAndSettings' })
 
   snippetContainerNode.style.opacity = '1'
 
