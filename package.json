@@ -41,22 +41,30 @@
     "configuration": {
       "title": "Polacode Automated",
       "properties": {
+        "polacode.background": {
+          "type": "string",
+          "scope": "resource",
+          "markdownDescription": "Background color of the snippet's container. Can be any valid value of the CSS property `background`.",
+          "default": "transparent"
+        },
         "polacode.shadow": {
           "type": "string",
-          "markdownDescription": "Shadow of the snippet node. Use any value for CSS `box-shadow`",
+          "scope": "resource",
+          "markdownDescription": "Shadow of the snippet node. Can be any valid value of the CSS property `box-shadow`.",
           "default": "0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36)"
         },
         "polacode.target": {
           "type": "string",
+          "scope": "resource",
           "description": "Shoot with or without container.",
           "default": "container",
           "enum": [
             "container",
             "snippet"
           ],
-          "enumDescriptions": [
-            "Shoot with the container.",
-            "Shoot the snippet alone. If you want transparent padding, use `container`."
+          "markdownEnumDescriptions": [
+            "Shoot the snippet with padding for `#polacode.shadow#`.",
+            "Shoot the snippet on it's own."
           ]
         },
         "polacode.defaultPath": {
@@ -64,27 +72,32 @@
             "string",
             "null"
           ],
+          "scope": "machine",
           "description": "Default save location for snippets.",
           "default": null
         },
         "polacode.windowTitle": {
           "type": "boolean",
-          "description": "Display a window title at the top of the snippet",
+          "scope": "resource",
+          "description": "Display a title at the top of the snippet. Can be overridden by clicking the top of the snippet preview.",
           "default": false
         },
         "polacode.autoSave": {
           "type": "boolean",
+          "scope": "resource",
           "description": "Automatically save snippet instead of displaying save dialog.",
           "default": false
         },
         "polacode.closeOnSave": {
           "type": "boolean",
+          "scope": "resource",
           "description": "Close panel after saving a snippet.",
           "default": true
         },
         "polacode.closeOnSaveDelay": {
           "type": "number",
-          "markdownDescription": "Time (in miliseconds) before the Polacode window closes. Only applies when `#polacode.closeOnSave#` is set to `true`.",
+          "scope": "resource",
+          "markdownDescription": "Time (in miliseconds) before the Polacode window closes. Only applies when `#polacode.closeOnSave#` is `true`.",
           "default": 1250,
           "minimum": 250
         }
