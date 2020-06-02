@@ -156,7 +156,7 @@
           break
 
         case 'updateSettings':
-          snippetContainerNode.style.background = event.data.background ?? 'transparent'
+          snippetContainerNode.style.background = event.data.background || 'transparent'
           snippetNode.style.boxShadow = event.data.shadow
           snippetCodeNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           target = event.data.target
