@@ -96,7 +96,7 @@ exports.activate = (context) => {
 
   const setupPanel = (_panel) => {
     panel = _panel
-    panel.webview.html = getWebviewContent(htmlPath, panel)
+    panel.webview.html = getWebviewContent(panel, htmlPath)
 
     vscode.window.onDidChangeActiveColorTheme(() => {
       copySelection()
