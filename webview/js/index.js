@@ -1,6 +1,6 @@
 /* global acquireVsCodeApi, domtoimage */
 
-(function PolacodeScript () {
+(function CodeCaptureScript () {
   const vscode = acquireVsCodeApi()
 
   let target = 'container'
@@ -98,7 +98,7 @@
 
     const blob = await domtoimage.toBlob(snippetContainerNode, config)
 
-    snippetNode.style.resize = ''
+    snippetNode.style.resize = null
 
     const serializedBlob = await serializeBlob(blob)
 
@@ -138,6 +138,10 @@
     setState({ renderTitle: !state.renderTitle })
   })
 
+  snippetCodeNode.addEventListener('dblclick', () => {
+    snippetNode.style.width = null
+  })
+
   document.getElementById('save').addEventListener('click', () => {
     if (target === 'container') {
       shootAll()
@@ -149,16 +153,16 @@
   window.addEventListener('message', (event) => {
     if (event) {
       switch (event.data.type) {
-        case 'update':
+        case 'updateSnippet':
           state.windowTitle = event.data.windowTitle
           document.execCommand('paste')
           break
 
         case 'updateSettings':
-          snippetContainerNode.style.background = event.data.background || 'transparent'
-          snippetNode.style.boxShadow = event.data.shadow
-          snippetCodeNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           target = event.data.target
+          snippetContainerNode.style.background = event.data.background || 'transparent'
+          snippetNode.style.boxShadow = target === 'container' ? event.data.shadow : 'none'
+          snippetCodeNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           setState({ renderTitle: event.data.renderTitle })
           break
 

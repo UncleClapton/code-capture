@@ -17,7 +17,7 @@ const {
 
 
 
-const WEBVIEW_TITLE = 'Polacode'
+const WEBVIEW_TITLE = 'Capture'
 
 
 
@@ -35,14 +35,14 @@ exports.activate = (context) => {
 
 
   const getFileSavePath = () => {
-    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('polacode').get('defaultPath') || path.resolve(homedir(), 'Desktop')
-    return path.resolve(filePath, `polacode-${getTimestamp()}.png`)
+    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('codeCapture').get('defaultPath') || path.resolve(homedir(), 'Desktop')
+    return path.resolve(filePath, `VSCode-Screenshot-${getTimestamp()}.png`)
   }
 
   const saveFile = async (serializedBlob) => {
     let saveFilePath = getFileSavePath()
 
-    if (!vscode.workspace.getConfiguration('polacode').get('autoSave')) {
+    if (!vscode.workspace.getConfiguration('codeCapture').get('autoSave')) {
       const fileURI = await vscode.window.showSaveDialog({
         defaultUri: vscode.Uri.file(saveFilePath),
         filters: {
@@ -58,8 +58,8 @@ exports.activate = (context) => {
       lastUsedImagePath = path.parse(saveFilePath).dir
     }
 
-    if (vscode.workspace.getConfiguration('polacode').get('closeOnSave')) {
-      const timeoutTime = vscode.workspace.getConfiguration('polacode').get('closeOnSaveDelay')
+    if (vscode.workspace.getConfiguration('codeCapture').get('closeOnSave')) {
+      const timeoutTime = vscode.workspace.getConfiguration('codeCapture').get('closeOnSaveDelay')
       setTimeout(() => {
         panel.dispose()
       }, timeoutTime)
@@ -68,21 +68,21 @@ exports.activate = (context) => {
 
 
 
-  const copySelection = () => {
+  const updateSnippet = () => {
     const editor = vscode.window.activeTextEditor
 
     if (editor && editor.selection && !editor.selection.isEmpty) {
       vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
 
       panel.postMessage({
-        type: 'update',
+        type: 'updateSnippet',
         windowTitle: getWindowTitle(),
       })
     }
   }
 
   const syncSettings = () => {
-    const settings = vscode.workspace.getConfiguration('polacode')
+    const settings = vscode.workspace.getConfiguration('codeCapture')
     const editorSettings = vscode.workspace.getConfiguration('editor', null)
     panel.webview.postMessage({
       type: 'updateSettings',
@@ -99,19 +99,19 @@ exports.activate = (context) => {
     panel.webview.html = getWebviewContent(panel, htmlPath)
 
     vscode.window.onDidChangeActiveColorTheme(() => {
-      copySelection()
+      updateSnippet()
     }, null, disposables)
 
     vscode.window.onDidChangeTextEditorSelection(() => {
-      copySelection()
+      updateSnippet()
     }, null, disposables)
 
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor')) {
+      if (event.affectsConfiguration('codeCapture') || event.affectsConfiguration('editor')) {
         syncSettings()
       }
 
-      if (event.affectsConfiguration('polacode.defaultPath')) {
+      if (event.affectsConfiguration('codeCapture.defaultPath')) {
         lastUsedImagePath = null
       }
     }, null, disposables)
@@ -145,18 +145,19 @@ exports.activate = (context) => {
     }, null, disposables)
   }
 
-  vscode.window.registerWebviewPanelSerializer('polacode', {
+  vscode.window.registerWebviewPanelSerializer('codeCapture', {
     deserializeWebviewPanel: (_panel) => {
       setupPanel(_panel)
+      syncSettings()
     },
   })
 
-  vscode.commands.registerCommand('polacode.activate', () => {
+  vscode.commands.registerCommand('codeCapture.activate', () => {
     if (panel) {
       panel.reveal(vscode.ViewColumn.Two, true)
     } else {
       setupPanel(
-        vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, {
+        vscode.window.createWebviewPanel('codeCapture', WEBVIEW_TITLE, {
           preserveFocus: true,
           viewColumn: vscode.ViewColumn.Two,
         }, {
@@ -167,6 +168,6 @@ exports.activate = (context) => {
     }
 
     syncSettings()
-    copySelection()
+    updateSnippet()
   })
 }
