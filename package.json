@@ -71,13 +71,19 @@
             "Shoot the snippet on it's own."
           ]
         },
+        "codeCapture.captureScale": {
+          "type": "number",
+          "markdownDescription": "Determines the final size of the capture. A scale of `1` equates to the apparent size of the capture preview.",
+          "default": 2,
+          "minimum": 1
+        },
         "codeCapture.defaultPath": {
           "type": [
             "string",
             "null"
           ],
           "scope": "machine",
-          "description": "Default save location for snippets.",
+          "description": "Default save location for captures.",
           "default": null
         },
         "codeCapture.windowTitle": {
@@ -93,13 +99,7 @@
         "codeCapture.closeOnSave": {
           "type": "boolean",
           "description": "Close panel after saving a snippet.",
-          "default": true
-        },
-        "codeCapture.closeOnSaveDelay": {
-          "type": "number",
-          "markdownDescription": "Time (in miliseconds) before the capture window closes. Only applies when `#codeCapture.closeOnSave#` is `true`.",
-          "default": 1250,
-          "minimum": 250
+          "default": false
         }
       }
     }

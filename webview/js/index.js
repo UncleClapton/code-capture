@@ -4,6 +4,7 @@
   const vscode = acquireVsCodeApi()
 
   let target = 'container'
+  let scale = 2
 
   const snippetNode = document.getElementById('snippet')
   const snippetTitleNode = document.getElementById('snippet-title')
@@ -112,10 +113,10 @@
 
   const shootAll = () => {
     shoot({
-      width: snippetContainerNode.offsetWidth * 2,
-      height: snippetContainerNode.offsetHeight * 2,
+      width: snippetContainerNode.offsetWidth * scale,
+      height: snippetContainerNode.offsetHeight * scale,
       style: {
-        transform: 'scale(2)',
+        transform: scale > 1 ? `scale(${scale})` : null,
         'transform-origin': 'center',
       },
     })
@@ -123,10 +124,10 @@
 
   const shootSnippet = () => {
     shoot({
-      width: snippetNode.offsetWidth * 2,
-      height: snippetNode.offsetHeight * 2,
+      width: snippetNode.offsetWidth * scale,
+      height: snippetNode.offsetHeight * scale,
       style: {
-        transform: 'scale(2)',
+        transform: scale > 1 ? `scale(${scale})` : null,
         'transform-origin': 'center',
         padding: 0,
         background: 'none',
@@ -160,8 +161,9 @@
 
         case 'updateSettings':
           target = event.data.target
+          scale = event.data.scale
           snippetContainerNode.style.background = event.data.background || 'transparent'
-          snippetContainerNode.style.padding = target === 'container' ? `${event.data.padding}px` : null
+          snippetNode.style.margin = target === 'container' ? `${event.data.padding}px` : null
           snippetNode.style.boxShadow = target === 'container' ? event.data.shadow : 'none'
           snippetCodeNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           setState({ renderTitle: event.data.renderTitle })

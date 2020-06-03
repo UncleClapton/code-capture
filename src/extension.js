@@ -16,7 +16,8 @@ const {
 
 
 
-
+const CLOSE_ON_SAVE_DELAY = 1250
+const WEBVIEW_NAME = 'codecapture'
 const WEBVIEW_TITLE = 'Capture'
 
 
@@ -36,7 +37,7 @@ exports.activate = (context) => {
 
   const getFileSavePath = () => {
     const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('codeCapture').get('defaultPath') || path.resolve(homedir(), 'Desktop')
-    return path.resolve(filePath, `VSCode-Screenshot-${getTimestamp()}.png`)
+    return path.resolve(filePath, `vscode-capture-${getTimestamp()}.png`)
   }
 
   const saveFile = async (serializedBlob) => {
@@ -59,10 +60,9 @@ exports.activate = (context) => {
     }
 
     if (vscode.workspace.getConfiguration('codeCapture').get('closeOnSave')) {
-      const timeoutTime = vscode.workspace.getConfiguration('codeCapture').get('closeOnSaveDelay')
       setTimeout(() => {
         panel.dispose()
-      }, timeoutTime)
+      }, CLOSE_ON_SAVE_DELAY)
     }
   }
 
@@ -90,13 +90,14 @@ exports.activate = (context) => {
       shadow: settings.get('shadow'),
       padding: settings.get('padding'),
       renderTitle: settings.get('windowTitle'),
+      scale: settings.get('captureScale'),
       target: settings.get('target'),
       ligature: editorSettings.get('fontLigatures'),
     })
   }
 
   const getNewPanel = () => {
-    return vscode.window.createWebviewPanel('codeCapture', WEBVIEW_TITLE, {
+    return vscode.window.createWebviewPanel(WEBVIEW_NAME, WEBVIEW_TITLE, {
       preserveFocus: true,
       viewColumn: vscode.ViewColumn.Two,
     }, {
@@ -157,7 +158,7 @@ exports.activate = (context) => {
     }, null, disposables)
   }
 
-  vscode.window.registerWebviewPanelSerializer('codeCapture', {
+  vscode.window.registerWebviewPanelSerializer(WEBVIEW_NAME, {
     deserializeWebviewPanel: (_panel) => {
       setupPanel(_panel)
       syncSettings()
