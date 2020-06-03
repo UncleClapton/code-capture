@@ -161,6 +161,7 @@
         case 'updateSettings':
           target = event.data.target
           snippetContainerNode.style.background = event.data.background || 'transparent'
+          snippetContainerNode.style.padding = target === 'container' ? `${event.data.padding}px` : null
           snippetNode.style.boxShadow = target === 'container' ? event.data.shadow : 'none'
           snippetCodeNode.style.fontVariantLigatures = event.data.ligature ? 'normal' : 'none'
           setState({ renderTitle: event.data.renderTitle })

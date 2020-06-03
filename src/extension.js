@@ -87,16 +87,28 @@ exports.activate = (context) => {
     panel.webview.postMessage({
       type: 'updateSettings',
       background: settings.get('background'),
-      renderTitle: settings.get('windowTitle'),
       shadow: settings.get('shadow'),
+      padding: settings.get('padding'),
+      renderTitle: settings.get('windowTitle'),
       target: settings.get('target'),
       ligature: editorSettings.get('fontLigatures'),
     })
   }
 
-  const setupPanel = (_panel) => {
+  const getNewPanel = () => {
+    return vscode.window.createWebviewPanel('codeCapture', WEBVIEW_TITLE, {
+      preserveFocus: true,
+      viewColumn: vscode.ViewColumn.Two,
+    }, {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+    })
+  }
+
+  const setupPanel = (_panel = getNewPanel()) => {
     panel = _panel
     panel.webview.html = getWebviewContent(panel, htmlPath)
+    panel.iconPath = vscode.Uri.file(path.resolve(context.extensionPath, 'icon.png'))
 
     vscode.window.onDidChangeActiveColorTheme(() => {
       updateSnippet()
@@ -154,17 +166,13 @@ exports.activate = (context) => {
 
   vscode.commands.registerCommand('codeCapture.activate', () => {
     if (panel) {
-      panel.reveal(vscode.ViewColumn.Two, true)
+      try {
+        panel.reveal(vscode.ViewColumn.Two, true)
+      } catch {
+        setupPanel()
+      }
     } else {
-      setupPanel(
-        vscode.window.createWebviewPanel('codeCapture', WEBVIEW_TITLE, {
-          preserveFocus: true,
-          viewColumn: vscode.ViewColumn.Two,
-        }, {
-          enableScripts: true,
-          localResourceRoots: [vscode.Uri.file(context.extensionPath)],
-        }),
-      )
+      setupPanel()
     }
 
     syncSettings()
