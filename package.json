@@ -2,7 +2,7 @@
   "name": "code-capture",
   "displayName": "Code Capture",
   "description": "📸 Beautiful screenshots for your code",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/UncleClapton/code-capture.git"
