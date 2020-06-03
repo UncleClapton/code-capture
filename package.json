@@ -44,26 +44,22 @@
       "properties": {
         "codeCapture.background": {
           "type": "string",
-          "scope": "resource",
           "markdownDescription": "Background color of the snippet's container. Can be any valid value of the CSS property `background`.",
           "default": "transparent"
         },
         "codeCapture.shadow": {
           "type": "string",
-          "scope": "resource",
           "markdownDescription": "Shadow of the snippet node. Can be any valid value of the CSS property `box-shadow`. Ignored if `#codeCapture.target#` is `snippet`.",
           "default": "0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36)"
         },
         "codeCapture.padding": {
           "type": "number",
-          "scope": "resource",
           "markdownDescription": "amount of space reserved around the snippet. Ignored if `#codeCapture.target#` is `snippet`.",
-          "default": 16,
+          "default": 32,
           "minimum": 0
         },
         "codeCapture.target": {
           "type": "string",
-          "scope": "resource",
           "description": "Shoot with or without container.",
           "default": "container",
           "enum": [
@@ -86,25 +82,21 @@
         },
         "codeCapture.windowTitle": {
           "type": "boolean",
-          "scope": "resource",
           "description": "Display a title at the top of the snippet. Can be overridden by clicking the top of the snippet preview.",
           "default": false
         },
         "codeCapture.autoSave": {
           "type": "boolean",
-          "scope": "resource",
           "description": "Automatically save snippet instead of displaying save dialog.",
           "default": false
         },
         "codeCapture.closeOnSave": {
           "type": "boolean",
-          "scope": "resource",
           "description": "Close panel after saving a snippet.",
           "default": true
         },
         "codeCapture.closeOnSaveDelay": {
           "type": "number",
-          "scope": "resource",
           "markdownDescription": "Time (in miliseconds) before the capture window closes. Only applies when `#codeCapture.closeOnSave#` is `true`.",
           "default": 1250,
           "minimum": 250
