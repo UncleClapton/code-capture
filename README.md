@@ -3,7 +3,7 @@
 </p>
 
 <!-- ![usage](https://github.com/uncleclapton/code-capture/raw/master/demo/usage.gif) -->
-![usage](./demo/usageAuto.gif)
+![usage](./demo/CodeCaptureUsage.gif)
 
 ## Code Capture
 
