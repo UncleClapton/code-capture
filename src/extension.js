@@ -75,6 +75,15 @@ const activate = (context) => {
   const copyToClipboard = () => {
     let filePath = getFileSavePath()
     switch(process.platform) {
+      case 'linux':
+        exec(`xclip -sel clip -t image/png -i ${filePath}`, (err) => {
+          if (err) {
+            vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
+            return
+          }
+        })
+        break
+
       case 'darwin':
         exec(`${path.join(__dirname, '../res/mac-to-clip')} ${filePath}`, (err) => {
           if (err) {
