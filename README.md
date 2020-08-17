@@ -1,16 +1,16 @@
 <p>
-  <h2 align="center">Code Capture</h2>
+  <h2 align="center">Polacode automated</h2>
 </p>
 
-<!-- ![usage](https://github.com/uncleclapton/code-capture/raw/master/demo/usage.gif) -->
-![usage](./demo/CodeCaptureUsage.gif)
+<!-- ![usage](https://github.com/silentnoodlemaster/polacode-automated/raw/master/demo/usage.gif) -->
+![usage](./demo/polacodeUsage.gif)
 
-## Code Capture
+## Polacode automated
 
 This extenstion is a fork of the popular extension `Polacode`. It adds some major QoL improvements while also overhauling and streamlining how most things work under the hood.
 
 
-It is currently manual intallation only. The latest VISX file can be found in [releases](https://github.com/UncleClapton/code-capture/releases).
+It is currently manual intallation only. The latest VISX file can be found in [releases](https://github.com/silentnoodlemaster/polacode-automated/releases).
 
 
 
@@ -21,7 +21,7 @@ It is currently manual intallation only. The latest VISX file can be found in [r
 - Click on the top of the snippet to toggle the snippet's titlebar.
 - Resize the snippet by dragging the lowerright corner.
 - Double click the snippet's code to reset the snippet's size.
-- Use `codeCapture.target`, `codeCapture.shadow`, and `codeCapture.background` to control the snippet's backdrop.
+- Use `polacode.target`, `polacode.shadow`, and `polacode.background` to control the snippet's backdrop.
 
 
 
@@ -44,15 +44,15 @@ The code has to look right
 
 [Nord](https://github.com/arcticicestudio/nord-visual-studio-code) + [Input Mono](http://input.fontbureau.com)
 
-![demo1](https://raw.githubusercontent.com/uncleclapton/code-capture/master/demo/1.png)
+![demo1](https://raw.githubusercontent.com/silentnoodlemaster/polacode-automated/master/demo/1.png)
 
 [Monokai Pro](https://marketplace.visualstudio.com/items?itemName=monokai.theme-monokai-pro-vscode) + [Operator Mono](https://www.typography.com/blog/introducing-operator)
 
-![demo2](https://raw.githubusercontent.com/uncleclapton/code-capture/master/demo/2.png)
+![demo2](https://raw.githubusercontent.com/silentnoodlemaster/polacode-automated/master/demo/2.png)
 
 [Material Theme Palenight](https://marketplace.visualstudio.com/items?itemName=Equinusocio.vsc-material-theme) + [Fira Code](https://github.com/tonsky/FiraCode)
 
-![demo3](https://raw.githubusercontent.com/uncleclapton/code-capture/master/demo/3.png)
+![demo3](https://raw.githubusercontent.com/silentnoodlemaster/polacode-automated/master/demo/3.png)
 
 
 
@@ -62,9 +62,9 @@ The code has to look right
 
 Thanks to [Pine](https://github.com/octref) & [Peng](https://github.com/rebornix) for creating this excellent extension.
 
-Thanks to [@tsayen](https://github.com/tsayen), [@1904labs](https://github.com/1904labs), and [@kufii](https://github.com/kufii) for all the work that made [dom-to-image-even-more](https://github.com/kufii/dom-to-image-even-more) possible, which codeCapture uses to generate the images.
+Thanks to [@tsayen](https://github.com/tsayen), [@1904labs](https://github.com/1904labs), and [@kufii](https://github.com/kufii) for all the work that made [dom-to-image-even-more](https://github.com/kufii/dom-to-image-even-more) possible, which polacode uses to generate the images.
 
-Thanks to [Dawn Labs](https://dawnlabs.io) for making [Carbon](https://carbon.now.sh) that inspired Polacode and codeCapture.
+Thanks to [Dawn Labs](https://dawnlabs.io) for making [Carbon](https://carbon.now.sh) that inspired Polacode and polacode.
 
 Many color are taken from the elegant [Nord](https://github.com/arcticicestudio/nord) theme by [@arcticicestudio](https://github.com/arcticicestudio).
 

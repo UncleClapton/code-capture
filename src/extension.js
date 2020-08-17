@@ -17,7 +17,7 @@ const {
 
 
 const CLOSE_ON_SAVE_DELAY = 1250
-const WEBVIEW_NAME = 'codecapture'
+const WEBVIEW_NAME = 'polacode'
 const WEBVIEW_TITLE = 'Capture'
 
 
@@ -36,14 +36,14 @@ exports.activate = (context) => {
 
 
   const getFileSavePath = () => {
-    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('codeCapture').get('defaultPath') || path.resolve(homedir(), 'Desktop')
-    return path.resolve(filePath, `vscode-capture-${getTimestamp()}.png`)
+    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('polacode').get('defaultPath') || path.resolve(homedir(), 'Desktop')
+    return path.resolve(filePath, `polacode-${getTimestamp()}.png`)
   }
 
   const saveFile = async (serializedBlob) => {
     let saveFilePath = getFileSavePath()
 
-    if (!vscode.workspace.getConfiguration('codeCapture').get('autoSave')) {
+    if (!vscode.workspace.getConfiguration('polacode').get('autoSave')) {
       const fileURI = await vscode.window.showSaveDialog({
         defaultUri: vscode.Uri.file(saveFilePath),
         filters: {
@@ -59,7 +59,7 @@ exports.activate = (context) => {
       lastUsedImagePath = path.parse(saveFilePath).dir
     }
 
-    if (vscode.workspace.getConfiguration('codeCapture').get('closeOnSave')) {
+    if (vscode.workspace.getConfiguration('polacode').get('closeOnSave')) {
       setTimeout(() => {
         panel.dispose()
       }, CLOSE_ON_SAVE_DELAY)
@@ -82,7 +82,7 @@ exports.activate = (context) => {
   }
 
   const syncSettings = () => {
-    const settings = vscode.workspace.getConfiguration('codeCapture')
+    const settings = vscode.workspace.getConfiguration('polacode')
     const editorSettings = vscode.workspace.getConfiguration('editor', null)
     panel.webview.postMessage({
       type: 'updateSettings',
@@ -120,11 +120,11 @@ exports.activate = (context) => {
     }, null, disposables)
 
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration('codeCapture') || event.affectsConfiguration('editor')) {
+      if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor')) {
         syncSettings()
       }
 
-      if (event.affectsConfiguration('codeCapture.defaultPath')) {
+      if (event.affectsConfiguration('polacode.defaultPath')) {
         lastUsedImagePath = null
       }
     }, null, disposables)
@@ -165,7 +165,7 @@ exports.activate = (context) => {
     },
   })
 
-  vscode.commands.registerCommand('codeCapture.activate', () => {
+  vscode.commands.registerCommand('polacode.activate', () => {
     if (panel) {
       try {
         panel.reveal(vscode.ViewColumn.Two, true)

@@ -1,6 +1,6 @@
 /* global acquireVsCodeApi, domtoimage */
 
-(function CodeCaptureScript () {
+(function polacodeScript () {
   const vscode = acquireVsCodeApi()
 
   let target = 'container'

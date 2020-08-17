@@ -1,15 +1,14 @@
 {
-  "name": "code-capture",
-  "displayName": "Code Capture",
+  "name": "polacode-automated",
+  "displayName": "Polacode automated",
   "description": "📸 Beautiful screenshots for your code",
   "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/UncleClapton/code-capture.git"
+    "url": "https://github.com/silentnoodlemaster/polacode-automated.git"
   },
-  "publisher": "UncleClapton",
+  "publisher": "silentnoodlemaster",
   "keywords": [
-    "CodeCapture",
     "polacode",
     "polaroid",
     "screenshot",
@@ -28,37 +27,37 @@
     "vscode": "^1.45.1"
   },
   "activationEvents": [
-    "onCommand:codeCapture.activate",
-    "onWebviewPanel:codeCapture"
+    "onCommand:polacode.activate",
+    "onWebviewPanel:polacode"
   ],
   "main": "./src/extension",
   "contributes": {
     "commands": [
       {
-        "command": "codeCapture.activate",
-        "title": "📸 Code Capture"
+        "command": "polacode.activate",
+        "title": "📸 Polacode automated"
       }
     ],
     "configuration": {
-      "title": "Code Capture",
+      "title": "Polacode automated",
       "properties": {
-        "codeCapture.background": {
+        "polacode.background": {
           "type": "string",
           "markdownDescription": "Background color of the snippet's container. Can be any valid value of the CSS property `background`.",
           "default": "transparent"
         },
-        "codeCapture.shadow": {
+        "polacode.shadow": {
           "type": "string",
-          "markdownDescription": "Shadow of the snippet node. Can be any valid value of the CSS property `box-shadow`. Ignored if `#codeCapture.target#` is `snippet`.",
+          "markdownDescription": "Shadow of the snippet node. Can be any valid value of the CSS property `box-shadow`. Ignored if `#polacode.target#` is `snippet`.",
           "default": "0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36)"
         },
-        "codeCapture.padding": {
+        "polacode.padding": {
           "type": "number",
-          "markdownDescription": "amount of space reserved around the snippet. Ignored if `#codeCapture.target#` is `snippet`.",
+          "markdownDescription": "amount of space reserved around the snippet. Ignored if `#polacode.target#` is `snippet`.",
           "default": 32,
           "minimum": 0
         },
-        "codeCapture.target": {
+        "polacode.target": {
           "type": "string",
           "description": "Shoot with or without container.",
           "default": "container",
@@ -67,17 +66,17 @@
             "snippet"
           ],
           "markdownEnumDescriptions": [
-            "Shoot the snippet with padding for `#codeCapture.shadow#`.",
+            "Shoot the snippet with padding for `#polacode.shadow#`.",
             "Shoot the snippet on it's own."
           ]
         },
-        "codeCapture.captureScale": {
+        "polacode.captureScale": {
           "type": "number",
           "markdownDescription": "Determines the final size of the capture. A scale of `1` equates to the apparent size of the capture preview.",
           "default": 2,
           "minimum": 1
         },
-        "codeCapture.defaultPath": {
+        "polacode.defaultPath": {
           "type": [
             "string",
             "null"
@@ -86,17 +85,17 @@
           "description": "Default save location for captures.",
           "default": null
         },
-        "codeCapture.windowTitle": {
+        "polacode.windowTitle": {
           "type": "boolean",
           "description": "Display a title at the top of the snippet. Can be overridden by clicking the top of the snippet preview.",
           "default": false
         },
-        "codeCapture.autoSave": {
+        "polacode.autoSave": {
           "type": "boolean",
           "description": "Automatically save snippet instead of displaying save dialog.",
           "default": false
         },
-        "codeCapture.closeOnSave": {
+        "polacode.closeOnSave": {
           "type": "boolean",
           "description": "Close panel after saving a snippet.",
           "default": false
