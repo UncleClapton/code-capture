@@ -1,14 +1,15 @@
 {
-  "name": "polacode-automated",
-  "displayName": "Polacode Automated",
-  "description": "📸  Automated polaroid for your code",
-  "version": "0.4.0",
+  "name": "code-capture",
+  "displayName": "Code Capture",
+  "description": "📸 Beautiful screenshots for your code",
+  "version": "1.0.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/UncleClapton/polacode.git"
+    "url": "https://github.com/UncleClapton/code-capture.git"
   },
   "publisher": "UncleClapton",
   "keywords": [
+    "CodeCapture",
     "polacode",
     "polaroid",
     "screenshot",
@@ -24,40 +25,40 @@
     "Other"
   ],
   "engines": {
-    "vscode": "^1.32.0"
+    "vscode": "^1.45.1"
   },
   "activationEvents": [
-    "onCommand:polacode.activate",
-    "onWebviewPanel:polacode"
+    "onCommand:codeCapture.activate",
+    "onWebviewPanel:codeCapture"
   ],
   "main": "./src/extension",
   "contributes": {
     "commands": [
       {
-        "command": "polacode.activate",
-        "title": "Polacode 📸"
+        "command": "codeCapture.activate",
+        "title": "📸 Code Capture"
       }
     ],
     "configuration": {
-      "title": "Polacode",
+      "title": "Code Capture",
       "properties": {
-        "polacode.shadow": {
+        "codeCapture.background": {
           "type": "string",
-          "markdownDescription": "Shadow of the snippet node. Use any value for CSS `box-shadow`",
-          "default": "rgba(0, 0, 0, 0.55) 0px 20px 64px"
+          "markdownDescription": "Background color of the snippet's container. Can be any valid value of the CSS property `background`.",
+          "default": "transparent"
         },
-        "polacode.transparentBackground": {
-          "type": "boolean",
-          "description": "Transparent background for containers.",
-          "default": false
-        },
-        "polacode.backgroundColor": {
+        "codeCapture.shadow": {
           "type": "string",
-          "markdownDescription": "Background color of snippet container. Use any value for CSS `background-color`.",
-          "format": "color-hex",
-          "default": "#f2f2f2"
+          "markdownDescription": "Shadow of the snippet node. Can be any valid value of the CSS property `box-shadow`. Ignored if `#codeCapture.target#` is `snippet`.",
+          "default": "0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36)"
         },
-        "polacode.target": {
+        "codeCapture.padding": {
+          "type": "number",
+          "markdownDescription": "amount of space reserved around the snippet. Ignored if `#codeCapture.target#` is `snippet`.",
+          "default": 32,
+          "minimum": 0
+        },
+        "codeCapture.target": {
           "type": "string",
           "description": "Shoot with or without container.",
           "default": "container",
@@ -65,37 +66,54 @@
             "container",
             "snippet"
           ],
-          "enumDescriptions": [
-            "Shoot with the container.",
-            "Shoot the snippet alone. If you want transparent padding, use `container` with `\"polacode.transparentBackground\": true`."
+          "markdownEnumDescriptions": [
+            "Shoot the snippet with padding for `#codeCapture.shadow#`.",
+            "Shoot the snippet on it's own."
           ]
         },
-        "polacode.defaultPath": {
-          "type": ["string", "null"],
-          "description": "Default save location for snippets.",
+        "codeCapture.captureScale": {
+          "type": "number",
+          "markdownDescription": "Determines the final size of the capture. A scale of `1` equates to the apparent size of the capture preview.",
+          "default": 2,
+          "minimum": 1
+        },
+        "codeCapture.defaultPath": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "scope": "machine",
+          "description": "Default save location for captures.",
           "default": null
         },
-        "polacode.autoSave": {
+        "codeCapture.windowTitle": {
+          "type": "boolean",
+          "description": "Display a title at the top of the snippet. Can be overridden by clicking the top of the snippet preview.",
+          "default": false
+        },
+        "codeCapture.autoSave": {
           "type": "boolean",
           "description": "Automatically save snippet instead of displaying save dialog.",
           "default": false
         },
-        "polacode.closeOnSave": {
+        "codeCapture.closeOnSave": {
           "type": "boolean",
           "description": "Close panel after saving a snippet.",
-          "default": true
-        },
-        "polacode.closeOnSaveDelay": {
-          "type": "number",
-          "markdownDescription": "Time (in miliseconds) before the Polacode window closes. Only applies when `#polacode.closeOnSave#` is set to `true`.",
-          "default": 1250,
-          "minimum": 250
+          "default": false
         }
       }
     }
   },
   "devDependencies": {
-    "@types/node": "^12.0.10",
-    "@types/vscode": "^1.32.0"
+    "@fuelrats/eslint-config": "^2.2.0-canary.1",
+    "@types/node": "^14.0.6",
+    "@types/vscode": "^1.45.1",
+    "eslint": "^7.1.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsdoc": "^26.0.1"
+  },
+  "dependencies": {
+    "dom-to-image-even-more": "^1.0.4",
+    "vivus": "^0.4.5"
   }
 }

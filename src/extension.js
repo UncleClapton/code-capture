@@ -1,26 +1,24 @@
-const vscode = require('vscode') /* eslint-disable-line import/no-unresolved */// this is fine
-const fs = require('fs')
-const path = require('path')
 const { homedir } = require('os')
-
-const writeSerializedBlobToFile = (serializeBlob, fileName) => {
-  const bytes = new Uint8Array(serializeBlob.split(','))
-  fs.writeFileSync(fileName, Buffer.from(bytes))
-}
-
-const WEBVIEW_TITLE = 'Polacode'
+const path = require('path')
+const vscode = require('vscode') /* eslint-disable-line import/no-unresolved */// this is fine
 
 
 
-const getHtmlContent = (htmlPath) => {
-  const htmlContent = fs.readFileSync(htmlPath, 'utf-8')
-  return htmlContent.replace(/script src="([^"]*)"/gu, (match, src) => {
-    const realSource = `vscode-resource:${path.resolve(htmlPath, '..', src)}`
-    return `script src="${realSource}"`
-  })
-}
 
-const getTimestamp = () => Math.trunc((new Date()).getTime() / 1000)
+
+const {
+  getTimestamp,
+  getWebviewContent,
+  getWindowTitle,
+  writeSerializedBlobToFile,
+} = require('./util')
+
+
+
+
+const CLOSE_ON_SAVE_DELAY = 1250
+const WEBVIEW_NAME = 'codecapture'
+const WEBVIEW_TITLE = 'Capture'
 
 
 
@@ -29,22 +27,23 @@ const getTimestamp = () => Math.trunc((new Date()).getTime() / 1000)
 /**
  * @param {vscode.ExtensionContext} context
  */
-const activate = (context) => {
+exports.activate = (context) => {
   const htmlPath = path.resolve(context.extensionPath, 'webview', 'index.html')
 
   let lastUsedImagePath = null
   let panel = null
+  const disposables = []
 
 
   const getFileSavePath = () => {
-    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('polacode').get('defaultPath') || path.resolve(homedir(), 'Desktop')
-    return path.resolve(filePath, `polacode-${getTimestamp()}.png`)
+    const filePath = lastUsedImagePath || vscode.workspace.getConfiguration('codeCapture').get('defaultPath') || path.resolve(homedir(), 'Desktop')
+    return path.resolve(filePath, `vscode-capture-${getTimestamp()}.png`)
   }
 
   const saveFile = async (serializedBlob) => {
     let saveFilePath = getFileSavePath()
 
-    if (!vscode.workspace.getConfiguration('polacode').get('autoSave')) {
+    if (!vscode.workspace.getConfiguration('codeCapture').get('autoSave')) {
       const fileURI = await vscode.window.showSaveDialog({
         defaultUri: vscode.Uri.file(saveFilePath),
         filters: {
@@ -60,37 +59,76 @@ const activate = (context) => {
       lastUsedImagePath = path.parse(saveFilePath).dir
     }
 
-    if (vscode.workspace.getConfiguration('polacode').get('closeOnSave')) {
-      const timeoutTime = vscode.workspace.getConfiguration('polacode').get('closeOnSaveDelay')
+    if (vscode.workspace.getConfiguration('codeCapture').get('closeOnSave')) {
       setTimeout(() => {
         panel.dispose()
-      // eslint-disable-next-line no-magic-numbers
-      }, timeoutTime)
+      }, CLOSE_ON_SAVE_DELAY)
     }
   }
 
-  const copySelection = () => {
-    vscode.commands.executeCommand('editor.action.clipboardCopyAction')
-    panel.postMessage({
-      type: 'update',
-    })
+
+
+  const updateSnippet = () => {
+    const editor = vscode.window.activeTextEditor
+
+    if (editor && editor.selection && !editor.selection.isEmpty) {
+      vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
+
+      panel.postMessage({
+        type: 'updateSnippet',
+        windowTitle: getWindowTitle(),
+      })
+    }
   }
 
-
   const syncSettings = () => {
-    const settings = vscode.workspace.getConfiguration('polacode')
+    const settings = vscode.workspace.getConfiguration('codeCapture')
     const editorSettings = vscode.workspace.getConfiguration('editor', null)
     panel.webview.postMessage({
       type: 'updateSettings',
+      background: settings.get('background'),
       shadow: settings.get('shadow'),
-      transparentBackground: settings.get('transparentBackground'),
-      backgroundColor: settings.get('backgroundColor'),
+      padding: settings.get('padding'),
+      renderTitle: settings.get('windowTitle'),
+      scale: settings.get('captureScale'),
       target: settings.get('target'),
       ligature: editorSettings.get('fontLigatures'),
     })
   }
 
-  const setupMessageListeners = () => {
+  const getNewPanel = () => {
+    return vscode.window.createWebviewPanel(WEBVIEW_NAME, WEBVIEW_TITLE, {
+      preserveFocus: true,
+      viewColumn: vscode.ViewColumn.Two,
+    }, {
+      enableScripts: true,
+      localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+    })
+  }
+
+  const setupPanel = (_panel = getNewPanel()) => {
+    panel = _panel
+    panel.webview.html = getWebviewContent(panel, htmlPath)
+    panel.iconPath = vscode.Uri.file(path.resolve(context.extensionPath, 'icon.png'))
+
+    vscode.window.onDidChangeActiveColorTheme(() => {
+      updateSnippet()
+    }, null, disposables)
+
+    vscode.window.onDidChangeTextEditorSelection(() => {
+      updateSnippet()
+    }, null, disposables)
+
+    vscode.workspace.onDidChangeConfiguration((event) => {
+      if (event.affectsConfiguration('codeCapture') || event.affectsConfiguration('editor')) {
+        syncSettings()
+      }
+
+      if (event.affectsConfiguration('codeCapture.defaultPath')) {
+        lastUsedImagePath = null
+      }
+    }, null, disposables)
+
     panel.webview.onDidReceiveMessage(({ type, data }) => {
       switch (type) {
         case 'shoot':
@@ -98,94 +136,47 @@ const activate = (context) => {
           break
 
         case 'getAndUpdateCacheAndSettings':
-          panel.webview.postMessage({
-            type: 'restoreBgColor',
-            bgColor: context.globalState.get('polacode.bgColor', '#2e3440'),
-          })
-
           syncSettings()
-          break
-
-        case 'updateBgColor':
-          context.globalState.update('polacode.bgColor', data.bgColor)
           break
 
         default:
           break
       }
-    })
+    }, null, disposables)
+
+    panel.onDidDispose(() => {
+      panel.dispose()
+
+      while (disposables.length) {
+        const listener = disposables.pop()
+        if (listener) {
+          listener.dispose()
+        }
+      }
+
+      panel = null
+    }, null, disposables)
   }
 
-  const setupSelectionSync = () => vscode.window.onDidChangeTextEditorSelection((event) => {
-    if (event.selections[0] && !event.selections[0].isEmpty) {
-      copySelection()
-    }
-  })
-
-
-
-
-
-  vscode.window.registerWebviewPanelSerializer('polacode', {
-    deserializeWebviewPanel: (_panel, state) => {
-      panel = _panel
-      panel.webview.html = getHtmlContent(htmlPath)
-      panel.webview.postMessage({
-        type: 'restore',
-        innerHTML: state.innerHTML,
-        bgColor: context.globalState.get('polacode.bgColor', '#2e3440'),
-      })
-      const selectionListener = setupSelectionSync()
-      panel.onDidDispose(() => {
-        selectionListener.dispose()
-      })
-      setupMessageListeners()
+  vscode.window.registerWebviewPanelSerializer(WEBVIEW_NAME, {
+    deserializeWebviewPanel: (_panel) => {
+      setupPanel(_panel)
+      syncSettings()
     },
   })
 
-  vscode.commands.registerCommand('polacode.activate', () => {
-    panel = vscode.window.createWebviewPanel('polacode', WEBVIEW_TITLE, 2, {
-      enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(path.join(context.extensionPath, 'webview'))],
-    })
-    panel.webview.html = getHtmlContent(htmlPath)
-
-    setupMessageListeners()
-
-    const selectionListener = setupSelectionSync()
-    panel.onDidDispose(() => {
-      selectionListener.dispose()
-    })
-
-    const bgColor = context.globalState.get('polacode.bgColor', '#2e3440')
-    panel.webview.postMessage({
-      type: 'init',
-      bgColor,
-    })
-
-    const { fontFamily } = vscode.workspace.getConfiguration('editor')
-    const { selection } = vscode.window.activeTextEditor
-    if (selection && !selection.isEmpty) {
-      copySelection()
+  vscode.commands.registerCommand('codeCapture.activate', () => {
+    if (panel) {
+      try {
+        panel.reveal(vscode.ViewColumn.Two, true)
+      } catch {
+        setupPanel()
+      }
     } else {
-      panel.webview.postMessage({
-        type: 'setInitialHtml',
-        fontFamily,
-      })
+      setupPanel()
     }
 
     syncSettings()
-  })
-
-  vscode.workspace.onDidChangeConfiguration((event) => {
-    if (event.affectsConfiguration('polacode') || event.affectsConfiguration('editor')) {
-      syncSettings()
-    }
-
-    if (event.affectsConfiguration('polacode.defaultPath')) {
-      lastUsedImagePath = null
-    }
+    updateSnippet()
   })
 }
-
-exports.activate = activate
