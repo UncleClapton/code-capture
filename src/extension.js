@@ -1,6 +1,7 @@
 const { homedir } = require('os')
 const path = require('path')
 const vscode = require('vscode') /* eslint-disable-line import/no-unresolved */// this is fine
+const { exec } = require('child_process') 
 
 
 
@@ -58,6 +59,8 @@ exports.activate = (context) => {
       writeSerializedBlobToFile(serializedBlob, saveFilePath)
       lastUsedImagePath = path.parse(saveFilePath).dir
     }
+    if (vscode.workspace.getConfiguration('polacode').get('saveToClipboard'))
+      copyToClipboard()
 
     if (vscode.workspace.getConfiguration('polacode').get('closeOnSave')) {
       setTimeout(() => {
@@ -66,6 +69,46 @@ exports.activate = (context) => {
     }
   }
 
+  const copyToClipboard = () => {
+    let filePath = getFileSavePath()
+    switch(process.platform) {
+      case 'linux':
+        exec(`xclip -sel clip -t image/png -i ${filePath}`, (err) => {
+          if (err) {
+            vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
+            return
+          }
+        })
+        break
+
+      case 'darwin':
+        exec(`${path.join(__dirname, '../res/mac-to-clip')} ${filePath}`, (err) => {
+          if (err) {
+            vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
+            return
+          }
+        })
+        break
+      case 'win32':
+        let ps_args = '-noprofile -noninteractive -nologo -sta -windowstyle hidden -executionpolicy unrestricted -file'
+        exec(`powershell ${ps_args} ${path.join(__dirname, '../res/win-to-clip.ps1')} -path ${filePath}`, (err) => {
+          if (err) {
+            vscode.window.showErrorMessage('Could not copy to clipboard! ' + err.message)
+            return
+          }
+        })
+        break
+      default:
+        vscode.window.showErrorMessage(`Saving to clipboard not supported on this platform.${filePath? ' Image saved to ' + filePath:''}`)
+    }
+  }
+
+  const copySelection = () => {
+    vscode.commands.executeCommand('editor.action.clipboardCopyAction')
+    panel.postMessage({
+      type: 'update',
+    })
+  }
 
 
   const updateSnippet = () => {

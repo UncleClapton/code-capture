@@ -81,8 +81,7 @@
             "string",
             "null"
           ],
-          "scope": "machine",
-          "description": "Default save location for captures.",
+          "description": "Default save location for snippets.",
           "default": null
         },
         "polacode.windowTitle": {
