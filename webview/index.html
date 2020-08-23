@@ -2,7 +2,7 @@
 <head>
   <meta
     http-equiv="Content-Security-Policy"
-    content="img-src vscode-resource: data: https:; script-src vscode-resource:; style-src 'unsafe-inline' vscode-resource:;"
+    content="default-src 'none'; img-src %VSC_CSP% data: https:; script-src 'nonce-%VSC_NONCE%'; style-src 'unsafe-inline' %VSC_CSP%;"
   />
   <style>
     html {
@@ -15,27 +15,53 @@
       align-items: center;
     }
 
+    #snippet-container-backing {
+      --sq-color: rgba(127,127,127,0.3);
+      --sq-color2: rgba(127,127,127,0.6);
+      background-image:
+        linear-gradient(45deg, var(--sq-color) 25%, transparent 25%, transparent 75%, var(--sq-color) 75%, var(--sq-color)),
+        linear-gradient(45deg, var(--sq-color) 25%, transparent 25%, transparent 75%, var(--sq-color) 75%, var(--sq-color)),
+        linear-gradient(45deg, var(--sq-color2) 25%, transparent 25%, transparent 75%, var(--sq-color2) 75%, var(--sq-color2)),
+        linear-gradient(45deg, var(--sq-color2) 25%, transparent 25%, transparent 75%, var(--sq-color2) 75%, var(--sq-color2));
+      background-position: 0 0, 10px 10px, 0px -10px, 10px 0px;
+      background-size: 20px 20px;
+      overflow: hidden;
+      border-radius: 6px;
+    }
     #snippet-container {
       display: flex;
       justify-content: center;
       align-items: center;
       overflow: hidden;
-      background-color: #f2f2f2;
-      border-radius: 4px;
       opacity: 0;
       transition: opacity .4s;
     }
     #snippet {
+      font-family: var(--vscode-font-family);
+      font-size: var(--vscode-font-size);
+      font-weight: var(--vscode-font-weight);
+      color: var(--vscode-foreground);
+      background: var(--vscode-editor-background);
       overflow: hidden;
       resize: horizontal;
       display: flex;
-      padding: 18px;
-      margin: 64px;
-      border-radius: 5px;
-      box-shadow: rgba(0, 0, 0, 0.55) 0px 20px 68px;
-      width: calc(100% - 8rem);
+      margin: 32px;
+      flex-direction: column;
+      border-radius: 6px;
+      box-shadow: 0 0 8px rgba(0,0,0,.18), 0 8px 16px rgba(0,0,0,.36);
+      user-select: none;
     }
-    #snippet > div {
+    #snippet-code {
+      font-family: var(--vscode-editor-font-family);
+      font-size: var(--vscode-editor-font-size);
+      font-weight: var(--vscode-editor-font-weight);
+      line-height: 1.4em;
+      color: var(--vscode-editor-foreground);
+      white-space: pre;
+      display: flex;
+      padding: 0 18px 18px;
+    }
+    #snippet-code > div {
       display: flex;
       flex-flow: column nowrap;
       justify-content: center;
@@ -43,11 +69,24 @@
       white-space: pre-wrap !important;
       word-break: break-all;
     }
-    #snippet > div > div {
+    #snippet-code > div > div {
       display: flex;
       flex-wrap: wrap;
     }
-
+    #snippet-title {
+      color: var(--vscode-titleBar-activeForeground);
+      font-size: 12px;
+      cursor: pointer;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px 0 18px;
+      margin: 0 18px;
+      overflow: hidden;
+    }
+    #snippet-title:empty {
+      padding-top: 0;
+    }
     #save-container {
       margin-top: 40px;
       margin-bottom: 60px;
@@ -71,8 +110,41 @@
 </head>
 
 <body>
-  <div id="snippet-container">
-    <div id="snippet" style="color: #d8dee9;background-color: #2e3440;font-family: SFMono-Regular,Consolas,DejaVu Sans Mono,Ubuntu Mono,Liberation Mono,Menlo,Courier,monospace;font-weight: normal;font-size: 12px;line-height: 18px;white-space: pre;"><meta charset="utf-8"><div style="color: #d8dee9;background-color: #2e3440;font-family: Input Mono;font-weight: normal;font-size: 12px;line-height: 18px;white-space: pre;"><div><span style="color: #8fbcbb;">console</span><span style="color: #eceff4;">.</span><span style="color: #88c0d0;">log</span><span style="color: #d8dee9;">(</span><span style="color: #eceff4;">'</span><span style="color: #a3be8c;">0. Run command `Polacode 📸 `</span><span style="color: #eceff4;">'</span><span style="color: #d8dee9;">)</span></div><div><span style="color: #8fbcbb;">console</span><span style="color: #eceff4;">.</span><span style="color: #88c0d0;">log</span><span style="color: #d8dee9;">(</span><span style="color: #eceff4;">'</span><span style="color: #a3be8c;">1. Copy some code</span><span style="color: #eceff4;">'</span><span style="color: #d8dee9;">)</span></div><div><span style="color: #8fbcbb;">console</span><span style="color: #eceff4;">.</span><span style="color: #88c0d0;">log</span><span style="color: #d8dee9;">(</span><span style="color: #eceff4;">'</span><span style="color: #a3be8c;">2. Paste into Polacode view</span><span style="color: #eceff4;">'</span><span style="color: #d8dee9;">)</span></div><div><span style="color: #8fbcbb;">console</span><span style="color: #eceff4;">.</span><span style="color: #88c0d0;">log</span><span style="color: #d8dee9;">(</span><span style="color: #eceff4;">'</span><span style="color: #a3be8c;">3. Click the button 📸 </span><span style="color: #eceff4;">'</span><span style="color: #d8dee9;">)</span></div></div></div>
+  <div id="snippet-container-backing">
+    <div id="snippet-container">
+      <div id="snippet">
+        <div id="snippet-title"></div>
+        <div id="snippet-code">
+          <meta charset="utf-8">
+          <div>
+            <div>
+              <span style="color: var(--vscode-symbolIcon-enumeratorForeground);">console</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">.</span>
+              <span style="color: var(--vscode-symbolIcon-functionForeground);">log</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">('</span>
+              <span style="color: var(--vscode-symbolIcon-stringForeground);">0. Run command `📸 Polacode automated`</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">')</span>
+            </div>
+            <div>
+              <span style="color: var(--vscode-symbolIcon-enumeratorForeground);">console</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">.</span>
+              <span style="color: var(--vscode-symbolIcon-functionForeground);">log</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">('</span>
+              <span style="color: var(--vscode-symbolIcon-stringForeground);">1. Select some code</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">')</span>
+            </div>
+            <div>
+              <span style="color: var(--vscode-symbolIcon-enumeratorForeground);">console</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">.</span>
+              <span style="color: var(--vscode-symbolIcon-functionForeground);">log</span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">('</span>
+              <span style="color: var(--vscode-symbolIcon-stringForeground);">3. Click the button 📸 </span>
+              <span style="color: var(--vscode-symbolIcon-textForeground);">')</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="save-container">
@@ -85,9 +157,9 @@
               <circle id="Oval" stroke="#4C566A" cx="64" cy="64" r="51.8734222"></circle>
               <circle id="Oval" stroke="#D8DEE9" cx="64" cy="64" r="28.2595556"></circle>
               <path d="M17.0965333,86.1788444 L40.5667556,48.1998222" id="Shape" stroke="#EBCB8B"></path>
-              <path d="M15.1509333,46.5180444 L58.6026667,36.2574222" id="Shape" stroke="#A3BE8C"></path>
+              <path d="M15.1509333,46.5180444 L58.6026667,36.2574222" id="Shape" stroke="var(--vscode-symbolIcon-stringForeground)"></path>
               <path d="M41.8204444,17.0965333 L79.8001778,40.5660444" id="Shape" stroke="#8FBCBB"></path>
-              <path d="M81.4819556,15.1502222 L91.7425778,58.6019556" id="Shape" stroke="#88C0D0"></path>
+              <path d="M81.4819556,15.1502222 L91.7425778,58.6019556" id="Shape" stroke="var(--vscode-symbolIcon-functionForeground)"></path>
               <path d="M110.902756,41.8197333 L87.4332444,79.8001778" id="Shape" stroke="#81A1C1"></path>
               <path d="M112.848356,81.4819556 L69.3973333,91.7418667" id="Shape" stroke="#B48EAD"></path>
               <path d="M86.1795556,110.902756 L48.1998222,87.4332444" id="Shape" stroke="#BF616A"></path>
@@ -97,8 +169,13 @@
     </svg>
   </div>
 
-  <script src="./dom2image.js"></script>
-  <script src="./vivus.js"></script>
-  <script src="./index.js"></script>
+  <script nonce="%VSC_NONCE%" src="../node_modules/dom-to-image-even-more/dist/dom-to-image-more.min.js" async></script>
+  <script nonce="%VSC_NONCE%" src="../node_modules/vivus/dist/vivus.min.js"></script>
+  <script nonce="%VSC_NONCE%" src="./js/index.js"></script>
+  <script nonce="%VSC_NONCE%" src="./js/anim.js" async></script>
+
+
+
+
 </body>
 </html>
