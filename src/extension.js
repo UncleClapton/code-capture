@@ -74,7 +74,7 @@ exports.activate = (context) => {
     if (editor && editor.selection && !editor.selection.isEmpty) {
       vscode.commands.executeCommand('editor.action.clipboardCopyWithSyntaxHighlightingAction')
 
-      panel.postMessage({
+      panel.webview.postMessage({
         type: 'updateSnippet',
         windowTitle: getWindowTitle(),
       })
@@ -97,13 +97,18 @@ exports.activate = (context) => {
   }
 
   const getNewPanel = () => {
-    return vscode.window.createWebviewPanel(WEBVIEW_NAME, WEBVIEW_TITLE, {
-      preserveFocus: true,
-      viewColumn: vscode.ViewColumn.Two,
-    }, {
-      enableScripts: true,
-      localResourceRoots: [vscode.Uri.file(context.extensionPath)],
-    })
+    return vscode.window.createWebviewPanel(
+      WEBVIEW_NAME,
+      WEBVIEW_TITLE,
+      {
+        preserveFocus: true,
+        viewColumn: vscode.ViewColumn.Two,
+      },
+      {
+        enableScripts: true,
+        localResourceRoots: [vscode.Uri.file(context.extensionPath)],
+      },
+    )
   }
 
   const setupPanel = (_panel = getNewPanel()) => {
