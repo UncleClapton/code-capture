@@ -54,7 +54,7 @@
     return minIndentCount
   }
 
-  const stripInitialIndent = (html, indent) => {
+  const stripHtmlIndent = (html, indent) => {
     if (indent === 0) {
       return html
     }
@@ -69,12 +69,27 @@
     return doc.body.innerHTML
   }
 
-  document.addEventListener('paste', (event) => {
-    const innerHTML = event.clipboardData.getData('text/html')
-    const code = event.clipboardData.getData('text/plain')
-    const minIndent = getMinIndent(code)
+  const stripTextIndent = (code, indent) => {
+    const lines = code.split(/\r?\n/gu)
 
-    setState({ innerHTML: stripInitialIndent(innerHTML, minIndent) })
+    return lines.map(
+      (line) => line.slice(indent)
+    ).join('\n')
+  }
+
+  document.addEventListener('paste', (event) => {
+    console.log('fuck me', event)
+    const code = event.clipboardData.getData('text/plain')
+    const indent = getMinIndent(code)
+
+    let innerHTML = event.clipboardData.getData('text/html')
+    if (innerHTML.length > 0) {
+      innerHTML = stripHtmlIndent(innerHTML, indent)
+    } else {
+      innerHTML = stripTextIndent(code, indent)
+    }
+
+    setState({ innerHTML })
   })
 
 
@@ -152,6 +167,7 @@
   })
 
   window.addEventListener('message', (event) => {
+    console.log('event', event)
     if (event) {
       switch (event.data.type) {
         case 'updateSnippet':
